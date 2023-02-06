@@ -7,13 +7,16 @@ import {
   ForeignKey,
   BelongsTo,
   HasMany,
+  HasOne,
 } from 'sequelize-typescript';
 import { Appointment } from './appointment.schema';
+import { ClinicalEvaluation } from './clinical-evaluation.schema';
 import { Diagnostic } from './diagnostic.schema';
 import { Person } from './person.schema';
+import { PhysicalEvaluation } from './physical-evaluation.schema';
 
 @Table
-export class Nutritionist extends Model<Nutritionist> {
+export class Patient extends Model<Patient> {
   @PrimaryKey
   @Column({
     type: DataType.UUID,
@@ -34,4 +37,10 @@ export class Nutritionist extends Model<Nutritionist> {
 
   @HasMany(() => Appointment)
   appointments: Appointment[];
+
+  @HasMany(() => PhysicalEvaluation)
+  physicalEvaluation: PhysicalEvaluation[];
+
+  @HasOne(() => ClinicalEvaluation)
+  clinicalEvaluation: ClinicalEvaluation;
 }

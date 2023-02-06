@@ -7,6 +7,8 @@ import {
   HasOne,
 } from 'sequelize-typescript';
 import { Nutritionist } from './nutritionist.schema';
+import { Patient } from './patient.schema';
+import { User } from './user.schema';
 
 @Table
 export class Person extends Model<Person> {
@@ -21,5 +23,11 @@ export class Person extends Model<Person> {
   name: string;
 
   @HasOne(() => Nutritionist)
-  nutritionist: Nutritionist;
+  nutritionist?: Nutritionist;
+
+  @HasOne(() => Patient)
+  patient?: Patient;
+
+  @HasOne(() => User)
+  user?: User;
 }

@@ -6,14 +6,11 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
-  HasMany,
 } from 'sequelize-typescript';
-import { Appointment } from './appointment.schema';
-import { Diagnostic } from './diagnostic.schema';
 import { Person } from './person.schema';
 
 @Table
-export class Nutritionist extends Model<Nutritionist> {
+export class User extends Model<User> {
   @PrimaryKey
   @Column({
     type: DataType.UUID,
@@ -28,10 +25,4 @@ export class Nutritionist extends Model<Nutritionist> {
 
   @BelongsTo(() => Person)
   person: Person;
-
-  @HasMany(() => Diagnostic)
-  diagnostics: Diagnostic[];
-
-  @HasMany(() => Appointment)
-  appointments: Appointment[];
 }
