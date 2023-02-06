@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { validateEnv } from './config/env/validate';
+import { AuthModule } from './modules/auth/auth.module';
 import { AnthropometricEvaluation } from './schemas/anthropometric-evaluation.schema';
 import { Appointment } from './schemas/appointment.schema';
 import { BiochemicalEvaluation } from './schemas/biochemical-evaluation.schema';
@@ -24,9 +23,6 @@ import { User } from './schemas/user.schema';
     }),
     SequelizeModule.forRoot({
       dialect: 'mysql',
-      // host: process.env.DB_HOST,
-      // port: process.env.DB_PORT,
-      // database: process.env.DB_NAME,
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       models: [
@@ -46,8 +42,9 @@ import { User } from './schemas/user.schema';
       autoLoadModels: true,
     }),
     SequelizeModule.forFeature([Person, Nutritionist]),
+    AuthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

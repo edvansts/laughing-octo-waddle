@@ -1,0 +1,5 @@
+export enum ROLES {
+  NUTRITIONIST = 'NUTRITIONIST',
+  PATIENT = 'PATIENT',
+  ADMIN = 'ADMIN',
+}

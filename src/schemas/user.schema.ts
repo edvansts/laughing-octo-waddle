@@ -1,3 +1,4 @@
+import { genSalt, hash } from 'bcrypt';
 import {
   Column,
   Model,
@@ -7,6 +8,7 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
+import { ROLES } from 'src/constants/user';
 import { Person } from './person.schema';
 
 @Table
@@ -19,6 +21,12 @@ export class User extends Model<User> {
   })
   id: string;
 
+  @Column({ type: DataType.ENUM(...Object.values(ROLES)) })
+  role: ROLES;
+
+  @Column({ type: DataType.STRING })
+  password: string;
+
   @ForeignKey(() => Person)
   @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })
   personId: string;
@@ -26,3 +34,10 @@ export class User extends Model<User> {
   @BelongsTo(() => Person)
   person: Person;
 }
+
+User.beforeSave(async (user) => {
+  if (user.password) {
+    const salt = await genSalt(10, 'a');
+    user.password = await hash(user.password, salt);
+  }
+});
