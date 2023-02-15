@@ -32,6 +32,9 @@ export class EnvironmentVariables {
   DB_PASSWORD: string;
   @IsString()
   DB_NAME: string;
+
+  @IsString()
+  USER_AUTH_SECRET: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

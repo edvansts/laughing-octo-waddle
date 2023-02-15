@@ -1,23 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { UserService } from '../user/user.service';
 import { SignPayload, TokenData } from './types';
-import { LoginBody } from './validators/login';
+import { LoginDto } from './validators/login.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private userService: UserService,
+  ) {}
 
   async signPayload(payload: SignPayload) {
     return this.jwtService.sign(payload);
   }
 
-  async validateUser(payload: LoginBody) {
-    // return await this.userService.findByPayload(payload);
-    return true;
+  async validateUser(payload: LoginDto) {
+    return await this.userService.findByLogin(payload);
   }
 
-  async validateTokenData(payload: TokenData) {
-    // return await this.userService.findByKeys(payload);
-    return true;
+  async validateTokenData({ email }: TokenData) {
+    return await this.userService.findByEmail(email);
+  }
+
+  async login(data: LoginDto) {
+    return this.userService.findByLogin(data);
   }
 }

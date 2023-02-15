@@ -9,11 +9,11 @@ import {
   HasMany,
   HasOne,
 } from 'sequelize-typescript';
-import { Appointment } from './appointment.schema';
-import { ClinicalEvaluation } from './clinical-evaluation.schema';
-import { Diagnostic } from './diagnostic.schema';
-import { Person } from './person.schema';
-import { PhysicalEvaluation } from './physical-evaluation.schema';
+import { Appointment } from './appointment.model';
+import { ClinicalEvaluation } from './clinical-evaluation.model';
+import { Diagnostic } from './diagnostic.model';
+import { Person } from './person.model';
+import { PhysicalEvaluation } from './physical-evaluation.model';
 
 @Table
 export class Patient extends Model<Patient> {

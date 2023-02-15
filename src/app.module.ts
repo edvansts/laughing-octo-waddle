@@ -3,17 +3,17 @@ import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { validateEnv } from './config/env/validate';
 import { AuthModule } from './modules/auth/auth.module';
-import { AnthropometricEvaluation } from './schemas/anthropometric-evaluation.schema';
-import { Appointment } from './schemas/appointment.schema';
-import { BiochemicalEvaluation } from './schemas/biochemical-evaluation.schema';
-import { ClinicalEvaluation } from './schemas/clinical-evaluation.schema';
-import { Diagnostic } from './schemas/diagnostic.schema';
-import { Guidance } from './schemas/guidance.schema';
-import { Nutritionist } from './schemas/nutritionist.schema';
-import { Patient } from './schemas/patient.schema';
-import { Person } from './schemas/person.schema';
-import { PhysicalEvaluation } from './schemas/physical-evaluation.schema';
-import { User } from './schemas/user.schema';
+import { AnthropometricEvaluation } from './models/anthropometric-evaluation.model';
+import { Appointment } from './models/appointment.model';
+import { BiochemicalEvaluation } from './models/biochemical-evaluation.model';
+import { ClinicalEvaluation } from './models/clinical-evaluation.model';
+import { Diagnostic } from './models/diagnostic.model';
+import { Guidance } from './models/guidance.model';
+import { Nutritionist } from './models/nutritionist.model';
+import { Patient } from './models/patient.model';
+import { Person } from './models/person.model';
+import { PhysicalEvaluation } from './models/physical-evaluation.model';
+import { User } from './models/user.model';
 
 @Module({
   imports: [
@@ -40,8 +40,8 @@ import { User } from './schemas/user.schema';
       ],
       uri: process.env.DB_URI,
       autoLoadModels: true,
+      synchronize: true,
     }),
-    SequelizeModule.forFeature([Person, Nutritionist]),
     AuthModule,
   ],
   controllers: [],

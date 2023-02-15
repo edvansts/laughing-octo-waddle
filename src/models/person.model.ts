@@ -6,9 +6,9 @@ import {
   DataType,
   HasOne,
 } from 'sequelize-typescript';
-import { Nutritionist } from './nutritionist.schema';
-import { Patient } from './patient.schema';
-import { User } from './user.schema';
+import { Nutritionist } from './nutritionist.model';
+import { Patient } from './patient.model';
+import { User } from './user.model';
 
 @Table
 export class Person extends Model<Person> {
@@ -21,6 +21,9 @@ export class Person extends Model<Person> {
 
   @Column({ type: DataType.STRING })
   name: string;
+
+  @Column({ type: DataType.STRING, unique: true })
+  cpf: string;
 
   @HasOne(() => Nutritionist)
   nutritionist?: Nutritionist;

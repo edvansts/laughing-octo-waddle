@@ -7,7 +7,7 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
-import { Patient } from './patient.schema';
+import { Patient } from './patient.model';
 
 @Table
 export class PhysicalEvaluation extends Model<PhysicalEvaluation> {

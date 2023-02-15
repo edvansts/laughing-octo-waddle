@@ -7,11 +7,10 @@ import {
   ForeignKey,
   BelongsTo,
 } from 'sequelize-typescript';
-import { Nutritionist } from './nutritionist.schema';
-import { Patient } from './patient.schema';
+import { Patient } from './patient.model';
 
 @Table
-export class Guidance extends Model<Guidance> {
+export class AnthropometricEvaluation extends Model<AnthropometricEvaluation> {
   @PrimaryKey
   @Column({
     type: DataType.UUID,
@@ -26,11 +25,4 @@ export class Guidance extends Model<Guidance> {
 
   @BelongsTo(() => Patient)
   patient: Patient;
-
-  @ForeignKey(() => Nutritionist)
-  @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })
-  nutritionistId: string;
-
-  @BelongsTo(() => Nutritionist)
-  nutritionist: Nutritionist;
 }
