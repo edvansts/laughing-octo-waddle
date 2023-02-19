@@ -1,14 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Length, IsString, IsEmail } from 'class-validator';
+import { BaseAuthDto } from './base-auth.dto';
 
-export class LoginDto {
-  @ApiProperty()
-  @IsString()
-  @IsEmail()
-  email: string;
-
-  @ApiProperty()
-  @IsString()
-  @Length(8, 30)
-  password: string;
-}
+export class LoginDto extends BaseAuthDto {}

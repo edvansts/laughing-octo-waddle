@@ -22,7 +22,7 @@ export class Nutritionist extends Model<Nutritionist> {
   })
   id: string;
 
-  @Column({ type: DataType.STRING })
+  @Column({ type: DataType.STRING, unique: true, allowNull: false })
   crn: string;
 
   @ForeignKey(() => Person)

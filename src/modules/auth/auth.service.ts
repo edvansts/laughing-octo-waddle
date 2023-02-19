@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { NutritionistService } from '../nutritionist/nutritionist.service';
 import { UserService } from '../user/user.service';
 import { SignPayload, TokenData } from './types';
 import { LoginDto } from './validators/login.dto';
+import { RegisterNutritionistDto } from './validators/register-nutritionist.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
+    private nutritionistService: NutritionistService,
   ) {}
 
   async signPayload(payload: SignPayload) {
@@ -24,6 +27,38 @@ export class AuthService {
   }
 
   async login(data: LoginDto) {
-    return this.userService.findByLogin(data);
+    const user = await this.userService.findByLogin(data);
+
+    const token = await this.signPayload(data);
+
+    return {
+      user,
+      token,
+    };
+  }
+
+  async createNutritionist({
+    crn,
+    email,
+    name,
+    password,
+    cpf,
+  }: RegisterNutritionistDto) {
+    const nutritionist = await this.nutritionistService.create({
+      cpf,
+      crn,
+      email,
+      name,
+      password,
+    });
+
+    const token = await this.signPayload({ email, password });
+
+    const payload = {
+      nutritionist,
+      token,
+    };
+
+    return payload;
   }
 }

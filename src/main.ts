@@ -17,14 +17,7 @@ async function bootstrap() {
     .setTitle('Nutri')
     .setDescription('The nutri api documentation')
     .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'oauth2',
-        schema: 'Bearer',
-        bearerFormat: 'Token',
-      } as SecuritySchemeObject,
-      'Bearer',
-    )
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

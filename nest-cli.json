@@ -9,8 +9,8 @@
         "options": {
           "dtoFileNameSuffix": [
             ".dto.ts",
-            ".entity.ts",
-            ".schema.ts"
+            ".validator.ts",
+            ".model.ts"
           ]
         }
       }

@@ -13,4 +13,8 @@ export class PersonService {
 
     return newPerson.toJSON();
   }
+
+  async findByCpf(cpf: string) {
+    return this.personModel.findOne({ where: { cpf } });
+  }
 }
