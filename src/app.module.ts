@@ -16,9 +16,12 @@ import { PhysicalEvaluation } from './models/physical-evaluation.model';
 import { User } from './models/user.model';
 import { PatientModule } from './modules/patient/patient.module';
 import { NutritionistModule } from './modules/nutritionist/nutritionist.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       validate: validateEnv,
@@ -47,6 +50,7 @@ import { NutritionistModule } from './modules/nutritionist/nutritionist.module';
     AuthModule,
     PatientModule,
     NutritionistModule,
+    TasksModule,
   ],
   controllers: [],
   providers: [],
