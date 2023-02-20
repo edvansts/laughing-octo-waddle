@@ -1,3 +1,4 @@
+import { ApiExtraModels } from '@nestjs/swagger';
 import {
   Column,
   Model,
@@ -12,6 +13,7 @@ import { Appointment } from './appointment.model';
 import { Diagnostic } from './diagnostic.model';
 import { Person } from './person.model';
 
+@ApiExtraModels()
 @Table
 export class Nutritionist extends Model<Nutritionist> {
   @PrimaryKey

@@ -14,6 +14,8 @@ import { Patient } from './models/patient.model';
 import { Person } from './models/person.model';
 import { PhysicalEvaluation } from './models/physical-evaluation.model';
 import { User } from './models/user.model';
+import { PatientModule } from './modules/patient/patient.module';
+import { NutritionistModule } from './modules/nutritionist/nutritionist.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { User } from './models/user.model';
       synchronize: true,
     }),
     AuthModule,
+    PatientModule,
+    NutritionistModule,
   ],
   controllers: [],
   providers: [],

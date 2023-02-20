@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ROLE } from 'src/constants/user';
 import { Nutritionist } from 'src/models/nutritionist.model';
@@ -34,6 +34,18 @@ export class NutritionistService {
       personId: user.personId,
       crn,
     });
+
+    return nutritionist.toJSON();
+  }
+
+  async getNutritionistByPersonId(personId: string) {
+    const nutritionist = await this.nutritionistModel.findOne({
+      where: { personId },
+    });
+
+    if (!nutritionist) {
+      throw new NotFoundException('Paciente não encontrado');
+    }
 
     return nutritionist.toJSON();
   }

@@ -1,3 +1,4 @@
+import { ApiExtraModels, ApiHideProperty } from '@nestjs/swagger';
 import { genSalt, hash } from 'bcrypt';
 import {
   Column,
@@ -12,6 +13,7 @@ import {
 import { ROLE } from 'src/constants/user';
 import { Person } from './person.model';
 
+@ApiExtraModels()
 @Table
 class User extends Model<User> {
   @PrimaryKey
@@ -28,6 +30,7 @@ class User extends Model<User> {
   })
   role: ROLE;
 
+  @ApiHideProperty()
   @Column({ type: DataType.STRING, allowNull: false })
   password: string;
 

@@ -1,3 +1,4 @@
+import { ApiExtraModels } from '@nestjs/swagger';
 import {
   Column,
   Model,
@@ -9,6 +10,7 @@ import {
 } from 'sequelize-typescript';
 import { Patient } from './patient.model';
 
+@ApiExtraModels()
 @Table
 export class AnthropometricEvaluation extends Model<AnthropometricEvaluation> {
   @PrimaryKey
