@@ -35,6 +35,9 @@ export class EnvironmentVariables {
 
   @IsString()
   USER_AUTH_SECRET: string;
+
+  @IsString()
+  EXPO_ACCESS_TOKEN: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

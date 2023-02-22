@@ -9,9 +9,12 @@ import {
   ForeignKey,
   BelongsTo,
   BeforeSave,
+  HasMany,
+  Index,
 } from 'sequelize-typescript';
 import { ROLE } from 'src/constants/user';
 import { Person } from './person.model';
+import { PushNotificationToken } from './push-notification-token.moduel';
 
 @ApiExtraModels()
 @Table
@@ -34,7 +37,8 @@ class User extends Model<User> {
   @Column({ type: DataType.STRING, allowNull: false })
   password: string;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: false, unique: true })
+  @Index('email')
   email: string;
 
   @ForeignKey(() => Person)
@@ -43,6 +47,10 @@ class User extends Model<User> {
 
   @BelongsTo(() => Person)
   person: Person;
+
+  @ApiHideProperty()
+  @HasMany(() => PushNotificationToken)
+  pushNotificationTokens: PushNotificationToken[];
 
   @BeforeSave
   static async normalizePassword(instance: User) {

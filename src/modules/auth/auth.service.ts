@@ -1,20 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { NutritionistService } from '../nutritionist/nutritionist.service';
-import { PatientService } from '../patient/patient.service';
 import { UserService } from '../user/user.service';
+import { CreateUserDto } from '../user/validators/create-user.dto';
 import { SignPayload, TokenData } from './types';
+import { CheckInDto } from './validators/check-in.dto';
 import { LoginDto } from './validators/login.dto';
-import { RegisterNutritionistDto } from './validators/register-nutritionist.dto';
-import { RegisterPatientDto } from './validators/register-patient.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
-    private nutritionistService: NutritionistService,
-    private patientService: PatientService,
   ) {}
 
   async signPayload(payload: SignPayload) {
@@ -40,46 +36,15 @@ export class AuthService {
     };
   }
 
-  async createNutritionist({
-    crn,
-    email,
-    name,
-    password,
-    cpf,
-  }: RegisterNutritionistDto) {
-    const nutritionist = await this.nutritionistService.create({
-      cpf,
-      crn,
-      email,
-      name,
-      password,
-    });
-
-    const token = await this.signPayload({ email, password });
-
-    const payload = {
-      nutritionist,
-      token,
-    };
-
-    return payload;
+  async createUser(data: CreateUserDto) {
+    return this.userService.create(data);
   }
 
-  async createPatient({ email, name, password, cpf }: RegisterPatientDto) {
-    const nutritionist = await this.patientService.create({
-      cpf,
-      email,
-      name,
-      password,
-    });
+  async checkIn(data: CheckInDto) {
+    return this.userService.checkIn(data);
+  }
 
-    const token = await this.signPayload({ email, password });
-
-    const payload = {
-      nutritionist,
-      token,
-    };
-
-    return payload;
+  async getPushTokensByUserIds(...userIds: string[]) {
+    return this.userService.getPushTokensByUserIds(...userIds);
   }
 }

@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { UserStorage } from 'src/config/storage/user.storage';
 
 import { AuthService } from '../auth.service';
 
@@ -20,6 +21,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new HttpException('Unauthorized access', HttpStatus.UNAUTHORIZED);
     }
+
+    UserStorage.set(user);
 
     return user;
   }

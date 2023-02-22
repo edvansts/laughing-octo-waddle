@@ -1,5 +1,5 @@
 import { Length, IsString } from 'class-validator';
-import { BaseAuthDto } from './base-auth.dto';
+import { BaseAuthDto } from '../../auth/validators/base-auth.dto';
 
 export class RegisterPatientDto extends BaseAuthDto {
   @IsString()
