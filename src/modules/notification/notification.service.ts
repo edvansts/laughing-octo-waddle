@@ -6,6 +6,7 @@ import { Op } from 'sequelize';
 import { BulkCreateOptions } from 'sequelize';
 import { Notification } from 'src/models/notification.model';
 import { ExpoService } from '../expo/expo.service';
+import { UserService } from '../user/user.service';
 import type { CreateNotificationParam } from './types';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class NotificationService {
     @InjectModel(Notification)
     private notificationModel: typeof Notification,
     private expoService: ExpoService,
+    private userService: UserService,
   ) {}
 
   async create(
@@ -22,18 +24,10 @@ export class NotificationService {
   ) {
     await this.notificationModel.bulkCreate(
       notifications.map(
-        ({
-          scheduleDate,
-          pushTokens,
-          data,
-          title,
-          body,
-          subtitle,
-          priority,
-        }) => ({
+        ({ scheduleDate, userIds, data, title, body, subtitle, priority }) => ({
           scheduleDate,
           message: body,
-          pushTokens,
+          userIds,
           data,
           title,
           subtitle,
@@ -55,20 +49,12 @@ export class NotificationService {
     const notifications = await this.notificationModel.findAll({
       where: {
         isSended: false,
-        [Op.or]: [
-          {
-            scheduleDate: {
-              [Op.between]: interval,
-            },
+        scheduleDate: {
+          [Op.or]: {
+            [Op.between]: interval,
+            [Op.lt]: new Date(),
           },
-          {
-            [Op.and]: {
-              scheduleDate: {
-                [Op.lt]: new Date(),
-              },
-            },
-          },
-        ],
+        },
       },
     });
 
@@ -77,11 +63,11 @@ export class NotificationService {
 
   private async sendNotifications(
     messages: ExpoPushMessage[],
-    pushTokens: string[],
+    notificationIds: string[],
   ) {
     await Promise.all([
       await this.expoService.sendPushMessages(...messages),
-      await this.markAsSended(...pushTokens),
+      await this.markAsSended(...notificationIds),
     ]);
   }
 
@@ -91,18 +77,25 @@ export class NotificationService {
 
     const notificationsToSend = await this.getByInterval([startDate, endDate]);
 
-    const messages: ExpoPushMessage[] = notificationsToSend?.map(
-      ({ pushTokens, ...notification }) => ({
-        ...notification,
-        to: pushTokens,
+    if (notificationsToSend.length === 0) {
+      return;
+    }
+
+    const messages: ExpoPushMessage[] = await Promise.all(
+      notificationsToSend?.map(async ({ userIds, ...notification }) => {
+        const pushTokens = await this.userService.getPushTokensByUserId(
+          ...userIds,
+        );
+
+        return {
+          ...notification,
+          to: pushTokens,
+        };
       }),
     );
 
-    const allPushTokens = notificationsToSend.reduce(
-      (prevValue, { pushTokens }) => [...prevValue, ...pushTokens],
-      [] as string[],
-    );
+    const notificationIds = notificationsToSend.map(({ id }) => id);
 
-    await this.sendNotifications(messages, allPushTokens);
+    await this.sendNotifications(messages, notificationIds);
   }
 }

@@ -8,7 +8,7 @@ export class TasksService {
 
   constructor(private notificationService: NotificationService) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkNotifications() {
     try {
       this.logger.log('Verificating notifications');

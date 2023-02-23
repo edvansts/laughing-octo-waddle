@@ -40,6 +40,7 @@
     "date-fns": "^2.29.3",
     "expo-server-sdk": "^3.7.0",
     "mysql2": "^3.1.2",
+    "nestjs-cls": "^3.2.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",

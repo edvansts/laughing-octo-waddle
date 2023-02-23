@@ -3,6 +3,6 @@ import { PRIORITY } from 'src/constants/enum';
 
 export interface CreateNotificationParam extends Omit<ExpoPushMessage, 'to'> {
   scheduleDate: Date;
-  pushTokens: string[];
+  userIds: string[];
   priority?: PRIORITY;
 }

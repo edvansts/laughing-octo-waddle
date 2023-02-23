@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { intervalToDuration, subMinutes } from 'date-fns';
+import { formatDistanceStrict, intervalToDuration, subMinutes } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 import { Sequelize } from 'sequelize-typescript';
 import { PRIORITY } from 'src/constants/enum';
 import { Appointment } from 'src/models/appointment.model';
-import { getPlural } from 'src/utils/text';
 import { NotificationService } from '../notification/notification.service';
 import { CreateNotificationParam } from '../notification/types';
 
@@ -23,13 +23,13 @@ export class AppointmentsService {
     minutesBeforeToNotice,
     nutritionistId,
     patientId,
-    pushTokens,
+    userIds,
   }: {
     nutritionistId: string;
     patientId: string;
     minutesBeforeToNotice: number[];
     appointmentDate: Date;
-    pushTokens: string[];
+    userIds: string[];
   }) {
     const transaction = await this.sequelize.transaction();
 
@@ -49,7 +49,7 @@ export class AppointmentsService {
           subMinutes(appointmentDate, minutes),
         ),
       ].map((scheduleDate, index) => ({
-        pushTokens,
+        userIds,
         scheduleDate,
         body: this.getAppointmentNotificationMessage({
           appointmentDate,
@@ -59,7 +59,7 @@ export class AppointmentsService {
         priority: index === 0 ? PRIORITY.HIGH : undefined,
       }));
 
-      this.notificationService.create(notifications, { transaction });
+      await this.notificationService.create(notifications, { transaction });
 
       await transaction.commit();
 
@@ -79,17 +79,29 @@ export class AppointmentsService {
     appointmentDate: Date;
     scheduleDate: Date;
   }) {
-    const { days, hours } = intervalToDuration({
+    const { days, hours, minutes } = intervalToDuration({
       start: scheduleDate,
       end: appointmentDate,
     });
 
+    const formattedDistance = formatDistanceStrict(
+      scheduleDate,
+      appointmentDate,
+      {
+        locale: ptBR,
+      },
+    );
+
     const daysDistance = hours > 22 ? days + 1 : days;
 
-    const message = `Passando para lembrar da sua consulta ${
-      senderName ? `com ${senderName}` : ''
-    } daqui a ${daysDistance} dia${getPlural(daysDistance)}`;
+    if (daysDistance === 0 && hours === 0 && minutes < 1) {
+      return `Passando para lembrar da sua consulta ${
+        senderName ? `com ${senderName}` : ''
+      } agora`;
+    }
 
-    return message;
+    return `Passando para lembrar da sua consulta ${
+      senderName ? `com ${senderName}` : ''
+    } em ${formattedDistance}`;
   }
 }

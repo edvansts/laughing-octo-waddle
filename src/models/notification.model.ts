@@ -23,19 +23,6 @@ export class Notification extends Model<Notification> {
   @Column({ type: DataType.STRING, allowNull: false })
   message: string;
 
-  @Column({
-    type: DataType.JSON,
-    allowNull: false,
-    get: function () {
-      return JSON.parse(this.getDataValue('pushTokens'));
-    },
-    set: function (value) {
-      this.setDataValue('pushTokens', JSON.stringify(value));
-    },
-    defaultValue: JSON.stringify([]),
-  })
-  pushTokens: string[];
-
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   isSended: boolean;
 
@@ -67,4 +54,17 @@ export class Notification extends Model<Notification> {
     defaultValue: JSON.stringify({}),
   })
   data: object;
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+    get: function () {
+      return JSON.parse(this.getDataValue('userIds'));
+    },
+    set: function (value) {
+      this.setDataValue('userIds', JSON.stringify(value));
+    },
+    defaultValue: JSON.stringify([]),
+  })
+  userIds: string[];
 }

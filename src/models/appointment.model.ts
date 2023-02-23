@@ -6,11 +6,9 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
-  HasMany,
 } from 'sequelize-typescript';
 import { Nutritionist } from './nutritionist.model';
 import { Patient } from './patient.model';
-import { Notification } from './notification.model';
 
 @Table
 export class Appointment extends Model<Appointment> {
@@ -35,10 +33,4 @@ export class Appointment extends Model<Appointment> {
   @ForeignKey(() => Nutritionist)
   @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })
   nutritionistId: string;
-
-  @BelongsTo(() => Nutritionist)
-  nutritionist: Nutritionist;
-
-  @HasMany(() => Notification)
-  notificationTimes: Notification[];
 }

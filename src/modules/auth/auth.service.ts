@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
-import { CreateUserDto } from '../user/validators/create-user.dto';
 import { SignPayload, TokenData } from './types';
 import { CheckInDto } from './validators/check-in.dto';
 import { LoginDto } from './validators/login.dto';
@@ -36,15 +35,7 @@ export class AuthService {
     };
   }
 
-  async createUser(data: CreateUserDto) {
-    return this.userService.create(data);
-  }
-
   async checkIn(data: CheckInDto) {
     return this.userService.checkIn(data);
-  }
-
-  async getPushTokensByUserIds(...userIds: string[]) {
-    return this.userService.getPushTokensByUserIds(...userIds);
   }
 }

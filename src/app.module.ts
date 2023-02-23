@@ -20,6 +20,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { Notification } from './models/notification.model';
 import { PushInfo } from './models/push-info.model';
+import { ClsModule } from 'nestjs-cls';
 
 @Module({
   imports: [
@@ -27,6 +28,15 @@ import { PushInfo } from './models/push-info.model';
     ConfigModule.forRoot({
       isGlobal: true,
       validate: validateEnv,
+    }),
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        setup: (cls) => {
+          cls.set('user', undefined);
+        },
+      },
     }),
     SequelizeModule.forRoot({
       dialect: 'mysql',

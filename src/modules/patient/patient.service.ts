@@ -3,7 +3,9 @@ import { InjectModel } from '@nestjs/sequelize';
 import { FindOptions } from 'sequelize';
 import { ROLE } from 'src/constants/user';
 import { Patient } from 'src/models/patient.model';
+import { Person } from 'src/models/person.model';
 import { AuthService } from '../auth/auth.service';
+import { UserService } from '../user/user.service';
 import { RegisterPatientDto } from './validators/register-patient.dto';
 
 @Injectable()
@@ -11,17 +13,23 @@ export class PatientService {
   constructor(
     @InjectModel(Patient) private patientModel: typeof Patient,
     private authService: AuthService,
+    private userService: UserService,
   ) {}
 
   async create(data: RegisterPatientDto) {
-    const user = await this.authService.createUser({
+    const user = await this.userService.create({
       ...data,
       role: ROLE.PATIENT,
     });
 
-    const patient = await this.patientModel.create({
-      personId: user.personId,
-    });
+    const patient = await this.patientModel.create(
+      {
+        personId: user.personId,
+      },
+      { include: Person },
+    );
+
+    console.log();
 
     const token = await this.authService.signPayload({
       email: data.email,

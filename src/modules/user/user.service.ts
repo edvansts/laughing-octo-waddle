@@ -2,10 +2,11 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { compare } from 'bcrypt';
 import { isEmail, isObject } from 'class-validator';
+import { ClsService } from 'nestjs-cls';
 import { Op } from 'sequelize';
-import { UserStorage } from 'src/config/storage/user.storage';
 import { PushInfo } from 'src/models/push-info.model';
 import { User } from 'src/models/user.model';
+import { AppStore } from 'src/types/services';
 import { isValidCPF } from 'src/utils/validation';
 import { CheckInDto } from '../auth/validators/check-in.dto';
 import { PersonService } from '../person/person.service';
@@ -20,6 +21,7 @@ export class UserService {
     @InjectModel(PushInfo)
     private pushInfoModel: typeof PushInfo,
     private personService: PersonService,
+    private readonly cls: ClsService<AppStore>,
   ) {}
 
   async findByLogin(userData: { email: string; password: string }) {
@@ -97,7 +99,7 @@ export class UserService {
     }
   }
 
-  private async getUserPushInfos(...userIds: string[]) {
+  private async getPushInfosByUserId(...userIds: string[]) {
     const pushInfos = await this.pushInfoModel.findAll({
       where: { id: { [Op.in]: userIds } },
     });
@@ -105,11 +107,17 @@ export class UserService {
     return pushInfos;
   }
 
+  async getByPersonId(personId: string) {
+    const user = this.userModel.findOne({ where: { personId } });
+
+    return user;
+  }
+
   async checkIn({ pushToken }: CheckInDto) {
     try {
-      const user = UserStorage.get();
+      const { user } = this.cls.get();
 
-      const pushInfos = await this.getUserPushInfos(user.id);
+      const pushInfos = await this.getPushInfosByUserId(user.id);
 
       if (pushInfos.length === 0) {
         return;
@@ -131,8 +139,8 @@ export class UserService {
     }
   }
 
-  async getPushTokensByUserIds(...userIds: string[]) {
-    const pushInfos = this.getPushTokensByUserIds(...userIds);
+  async getPushTokensByUserId(...userIds: string[]) {
+    const pushInfos = await this.getPushInfosByUserId(...userIds);
 
     const tokens = pushInfos.map(({ token }) => token);
 
