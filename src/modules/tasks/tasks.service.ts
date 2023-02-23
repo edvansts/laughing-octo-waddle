@@ -1,41 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ExpoPushMessage } from 'expo-server-sdk';
-import { AppointmentsService } from '../appointments/appointments.service';
-import { ExpoService } from '../expo/expo.service';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
-  constructor(
-    private appointmentsService: AppointmentsService,
-    private expoService: ExpoService,
-  ) {}
+  constructor(private notificationService: NotificationService) {}
 
   @Cron(CronExpression.EVERY_10_SECONDS)
-  async checkScheduledAppointments() {
+  async checkNotifications() {
     try {
-      const appointmentsToNotice =
-        await this.appointmentsService.getAppointmentsToNotice();
+      this.logger.log('Verificating notifications');
 
-      await Promise.all(
-        appointmentsToNotice?.map(
-          async ({ id, pushNotificationTokens, message }) => {
-            const messages = pushNotificationTokens.map<ExpoPushMessage>(
-              (token) => ({
-                to: token,
-                title: 'Aviso de consulta',
-                body: message,
-                sound: 'default',
-              }),
-            );
-
-            await this.expoService.sendPushMessages(...messages);
-            await this.appointmentsService.markNotificationAsSended(id);
-          },
-        ),
-      );
+      await this.notificationService.checkNotifications();
     } catch (err) {
       this.logger.error(err);
     }

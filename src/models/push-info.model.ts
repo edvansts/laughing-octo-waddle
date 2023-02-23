@@ -10,7 +10,7 @@ import {
 import { User } from './user.model';
 
 @Table
-export class PushNotificationToken extends Model<PushNotificationToken> {
+export class PushInfo extends Model<PushInfo> {
   @PrimaryKey
   @Column({
     type: DataType.UUID,
@@ -21,6 +21,9 @@ export class PushNotificationToken extends Model<PushNotificationToken> {
 
   @Column({ type: DataType.STRING, allowNull: false })
   token: string;
+
+  @Column({ type: DataType.DATE, allowNull: false, defaultValue: new Date() })
+  lastCheckInAt: Date;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })

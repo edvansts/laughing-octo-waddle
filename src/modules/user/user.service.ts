@@ -4,9 +4,10 @@ import { compare } from 'bcrypt';
 import { isEmail, isObject } from 'class-validator';
 import { Op } from 'sequelize';
 import { UserStorage } from 'src/config/storage/user.storage';
-import { PushNotificationToken } from 'src/models/push-notification-token.moduel';
+import { PushInfo } from 'src/models/push-info.model';
 import { User } from 'src/models/user.model';
 import { isValidCPF } from 'src/utils/validation';
+import { CheckInDto } from '../auth/validators/check-in.dto';
 import { PersonService } from '../person/person.service';
 import { CreateUserDto } from './validators/create-user.dto';
 
@@ -16,8 +17,8 @@ export class UserService {
 
   constructor(
     @InjectModel(User) private userModel: typeof User,
-    @InjectModel(PushNotificationToken)
-    private pushNotificationTokenModel: typeof PushNotificationToken,
+    @InjectModel(PushInfo)
+    private pushInfoModel: typeof PushInfo,
     private personService: PersonService,
   ) {}
 
@@ -96,20 +97,33 @@ export class UserService {
     }
   }
 
-  async checkIn({ pushNotificationToken }: { pushNotificationToken: string }) {
+  private async getUserPushInfos(...userIds: string[]) {
+    const pushInfos = await this.pushInfoModel.findAll({
+      where: { id: { [Op.in]: userIds } },
+    });
+
+    return pushInfos;
+  }
+
+  async checkIn({ pushToken }: CheckInDto) {
     try {
       const user = UserStorage.get();
 
-      if (
-        user.pushNotificationTokens.some(
-          ({ token }) => token === pushNotificationToken,
-        )
-      ) {
+      const pushInfos = await this.getUserPushInfos(user.id);
+
+      if (pushInfos.length === 0) {
         return;
       }
 
-      await this.pushNotificationTokenModel.create({
-        token: pushNotificationToken,
+      const existsPushInfo = pushInfos.find(({ token }) => token === pushToken);
+
+      if (existsPushInfo) {
+        existsPushInfo.update({ lastCheckInAt: new Date() });
+        return;
+      }
+
+      await this.pushInfoModel.create({
+        token: pushToken,
         userId: user.id,
       });
     } catch (err) {
@@ -118,12 +132,9 @@ export class UserService {
   }
 
   async getPushTokensByUserIds(...userIds: string[]) {
-    const pushNotificationTokens =
-      await this.pushNotificationTokenModel.findAll({
-        where: { id: { [Op.in]: userIds } },
-      });
+    const pushInfos = this.getPushTokensByUserIds(...userIds);
 
-    const tokens = pushNotificationTokens.map(({ token }) => token);
+    const tokens = pushInfos.map(({ token }) => token);
 
     return tokens;
   }

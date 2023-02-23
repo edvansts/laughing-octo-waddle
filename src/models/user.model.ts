@@ -14,7 +14,7 @@ import {
 } from 'sequelize-typescript';
 import { ROLE } from 'src/constants/user';
 import { Person } from './person.model';
-import { PushNotificationToken } from './push-notification-token.moduel';
+import { PushInfo } from './push-info.model';
 
 @ApiExtraModels()
 @Table
@@ -49,8 +49,8 @@ class User extends Model<User> {
   person: Person;
 
   @ApiHideProperty()
-  @HasMany(() => PushNotificationToken)
-  pushNotificationTokens: PushNotificationToken[];
+  @HasMany(() => PushInfo)
+  pushInfos: PushInfo[];
 
   @BeforeSave
   static async normalizePassword(instance: User) {

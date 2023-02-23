@@ -1,17 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { addSeconds, subMinutes } from 'date-fns';
-import { Op } from 'sequelize';
+import { intervalToDuration, subMinutes } from 'date-fns';
 import { Sequelize } from 'sequelize-typescript';
+import { PRIORITY } from 'src/constants/enum';
 import { Appointment } from 'src/models/appointment.model';
-import { Notification } from 'src/models/notification.model';
+import { getPlural } from 'src/utils/text';
+import { NotificationService } from '../notification/notification.service';
+import { CreateNotificationParam } from '../notification/types';
+
+const APPOINTMENT_NOTIFICATION_TITLE = 'Lembrete';
 
 @Injectable()
 export class AppointmentsService {
   constructor(
     @InjectModel(Appointment) private appointmentModel: typeof Appointment,
-    @InjectModel(Notification)
-    private notificationModel: typeof Notification,
+    private notificationService: NotificationService,
     private sequelize: Sequelize,
   ) {}
 
@@ -20,15 +23,14 @@ export class AppointmentsService {
     minutesBeforeToNotice,
     nutritionistId,
     patientId,
-    pushNotificationTokens,
+    pushTokens,
   }: {
     nutritionistId: string;
     patientId: string;
     minutesBeforeToNotice: number[];
     appointmentDate: Date;
-    pushNotificationTokens: string[];
+    pushTokens: string[];
   }) {
-    console.log(pushNotificationTokens);
     const transaction = await this.sequelize.transaction();
 
     try {
@@ -41,22 +43,23 @@ export class AppointmentsService {
         { transaction },
       );
 
-      const notificationsArray = [
+      const notifications: CreateNotificationParam[] = [
         appointmentDate,
         ...minutesBeforeToNotice.map((minutes) =>
           subMinutes(appointmentDate, minutes),
         ),
-      ];
+      ].map((scheduleDate, index) => ({
+        pushTokens,
+        scheduleDate,
+        body: this.getAppointmentNotificationMessage({
+          appointmentDate,
+          scheduleDate,
+        }),
+        title: APPOINTMENT_NOTIFICATION_TITLE,
+        priority: index === 0 ? PRIORITY.HIGH : undefined,
+      }));
 
-      await this.notificationModel.bulkCreate(
-        notificationsArray.map((notification) => ({
-          scheduleTime: notification,
-          appointmentId: newAppointment.id,
-          message: 'Você tem uma consulta marcada daqui a X minutos',
-          pushNotificationTokens,
-        })),
-        { transaction },
-      );
+      this.notificationService.create(notifications, { transaction });
 
       await transaction.commit();
 
@@ -67,37 +70,26 @@ export class AppointmentsService {
     }
   }
 
-  async getAppointmentsToNotice() {
-    const startDate = new Date();
-    const endDate = addSeconds(new Date(), 60);
-
-    const notifications = await this.notificationModel.findAll({
-      where: {
-        isSended: false,
-        [Op.or]: [
-          {
-            scheduleTime: {
-              [Op.between]: [startDate, endDate],
-            },
-          },
-          {
-            [Op.and]: {
-              scheduleTime: {
-                [Op.lt]: startDate,
-              },
-            },
-          },
-        ],
-      },
+  private getAppointmentNotificationMessage({
+    appointmentDate,
+    scheduleDate,
+    senderName,
+  }: {
+    senderName?: string;
+    appointmentDate: Date;
+    scheduleDate: Date;
+  }) {
+    const { days, hours } = intervalToDuration({
+      start: scheduleDate,
+      end: appointmentDate,
     });
 
-    return notifications;
-  }
+    const daysDistance = hours > 22 ? days + 1 : days;
 
-  async markNotificationAsSended(notificationId: string) {
-    return await this.notificationModel.update(
-      { isSended: true, sendedAt: new Date() },
-      { where: { id: notificationId } },
-    );
+    const message = `Passando para lembrar da sua consulta ${
+      senderName ? `com ${senderName}` : ''
+    } daqui a ${daysDistance} dia${getPlural(daysDistance)}`;
+
+    return message;
   }
 }

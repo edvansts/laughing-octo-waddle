@@ -19,7 +19,7 @@ import { NutritionistModule } from './modules/nutritionist/nutritionist.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { Notification } from './models/notification.model';
-import { PushNotificationToken } from './models/push-notification-token.moduel';
+import { PushInfo } from './models/push-info.model';
 
 @Module({
   imports: [
@@ -45,7 +45,7 @@ import { PushNotificationToken } from './models/push-notification-token.moduel';
         AnthropometricEvaluation,
         ClinicalEvaluation,
         Notification,
-        PushNotificationToken,
+        PushInfo,
       ],
       uri: process.env.DB_URI,
       autoLoadModels: true,

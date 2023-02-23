@@ -4,10 +4,8 @@ import {
   Table,
   PrimaryKey,
   DataType,
-  ForeignKey,
-  BelongsTo,
 } from 'sequelize-typescript';
-import { Appointment } from './appointment.model';
+import { PRIORITY } from 'src/constants/enum';
 
 @Table
 export class Notification extends Model<Notification> {
@@ -20,7 +18,7 @@ export class Notification extends Model<Notification> {
   id: string;
 
   @Column({ type: DataType.DATE })
-  scheduleTime: Date;
+  scheduleDate: Date;
 
   @Column({ type: DataType.STRING, allowNull: false })
   message: string;
@@ -29,14 +27,14 @@ export class Notification extends Model<Notification> {
     type: DataType.JSON,
     allowNull: false,
     get: function () {
-      return JSON.parse(this.getDataValue('pushNotificationTokens'));
+      return JSON.parse(this.getDataValue('pushTokens'));
     },
     set: function (value) {
-      this.setDataValue('pushNotificationTokens', JSON.stringify(value));
+      this.setDataValue('pushTokens', JSON.stringify(value));
     },
     defaultValue: JSON.stringify([]),
   })
-  pushNotificationTokens: string[];
+  pushTokens: string[];
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   isSended: boolean;
@@ -44,10 +42,29 @@ export class Notification extends Model<Notification> {
   @Column({ type: DataType.DATE })
   sendedAt?: Date;
 
-  @ForeignKey(() => Appointment)
-  @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })
-  appointmentId: string;
+  @Column({ type: DataType.STRING })
+  title?: string;
 
-  @BelongsTo(() => Appointment)
-  appointment: Appointment;
+  @Column({ type: DataType.STRING })
+  subtitle?: string;
+
+  @Column({
+    type: DataType.ENUM,
+    values: Object.values(PRIORITY),
+    defaultValue: PRIORITY.NORMAL,
+  })
+  priority: PRIORITY;
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+    get: function () {
+      return JSON.parse(this.getDataValue('data'));
+    },
+    set: function (value) {
+      this.setDataValue('data', JSON.stringify(value));
+    },
+    defaultValue: JSON.stringify({}),
+  })
+  data: object;
 }

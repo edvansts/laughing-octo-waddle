@@ -69,8 +69,6 @@ export class NutritionistService {
   }: CreateAppointmentDto) {
     const user = UserStorage.get();
 
-    console.log(user);
-
     const nutritionist = await this.getNutritionistByPersonId(user.personId);
 
     const appointmentDateNormalized = new Date(appointmentDate);
@@ -85,7 +83,7 @@ export class NutritionistService {
 
     const tokens = await this.authService.getPushTokensByUserIds(
       user.id,
-      patient.person?.user?.id,
+      patient.person.user.id,
     );
 
     const appointment = await this.appointmentsService.create({
@@ -93,7 +91,7 @@ export class NutritionistService {
       minutesBeforeToNotice: notificationTimes,
       patientId: patient.id,
       nutritionistId: nutritionist.id,
-      pushNotificationTokens: tokens,
+      pushTokens: tokens,
     });
 
     return appointment;

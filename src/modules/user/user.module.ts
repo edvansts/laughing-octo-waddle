@@ -3,14 +3,11 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from 'src/models/user.model';
 import { PersonModule } from '../person/person.module';
 import { UserService } from './user.service';
-import { PushNotificationToken } from 'src/models/push-notification-token.moduel';
+import { PushInfo } from 'src/models/push-info.model';
 
 @Module({
   providers: [UserService],
-  imports: [
-    SequelizeModule.forFeature([User, PushNotificationToken]),
-    PersonModule,
-  ],
+  imports: [SequelizeModule.forFeature([User, PushInfo]), PersonModule],
   exports: [UserService],
 })
 export class UserModule {}
