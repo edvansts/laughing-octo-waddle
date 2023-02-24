@@ -37,7 +37,12 @@ class User extends Model<User> {
   @Column({ type: DataType.STRING, allowNull: false })
   password: string;
 
-  @Column({ type: DataType.STRING, allowNull: false, unique: true })
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
+    validate: { isEmail: true },
+  })
   @Index('email')
   email: string;
 

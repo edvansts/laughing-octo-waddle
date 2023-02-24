@@ -6,7 +6,7 @@ import { JwtAuthGuard } from 'src/config/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/config/guards/roles.guard';
 import { ROLE } from 'src/constants/user';
 import { User } from 'src/models/user.model';
-import { RegisterNutritionistDto } from '../auth/validators/register-nutritionist.dto';
+import { RegisterNutritionistDto } from './validators/register-nutritionist.dto';
 import { NutritionistService } from './nutritionist.service';
 import { CreateAppointmentDto } from './validators/create-appointment.dto';
 

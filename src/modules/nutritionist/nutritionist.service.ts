@@ -12,7 +12,7 @@ import { Person } from 'src/models/person.model';
 import { AppStore } from 'src/types/services';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { AuthService } from '../auth/auth.service';
-import { RegisterNutritionistDto } from '../auth/validators/register-nutritionist.dto';
+import { RegisterNutritionistDto } from './validators/register-nutritionist.dto';
 import { PatientService } from '../patient/patient.service';
 import { UserService } from '../user/user.service';
 import { CreateAppointmentDto } from './validators/create-appointment.dto';
@@ -29,16 +29,19 @@ export class NutritionistService {
   ) {}
 
   async create({ crn, isAdmin = false, ...data }: RegisterNutritionistDto) {
-    const nutritionistRole = isAdmin ? ROLE.ADMIN : ROLE.NUTRITIONIST;
+    const { user } = this.cls.get();
 
-    const user = await this.userService.create({
+    const nutritionistRole =
+      isAdmin && user.role === ROLE.ADMIN ? ROLE.ADMIN : ROLE.NUTRITIONIST;
+
+    const newUser = await this.userService.create({
       ...data,
       role: nutritionistRole,
     });
 
     const nutritionist = await this.nutritionistModel.create(
       {
-        personId: user.personId,
+        personId: newUser.personId,
         crn,
       },
       { include: Person },
