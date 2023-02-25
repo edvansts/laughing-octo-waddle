@@ -9,5 +9,8 @@ declare namespace NodeJS {
     readonly DB_NAME: string;
     readonly USER_AUTH_SECRET: string;
     readonly EXPO_ACCESS_TOKEN: string;
+    readonly CLOUDINARY_CLOUD_NAME: string;
+    readonly CLOUDINARY_API_KEY: string;
+    readonly CLOUDINARY_API_SECRET: string;
   }
 }
