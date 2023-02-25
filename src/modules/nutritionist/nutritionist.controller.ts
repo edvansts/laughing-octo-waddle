@@ -18,18 +18,24 @@ import { CreateAppointmentDto } from './validators/create-appointment.dto';
 export class NutritionistController {
   constructor(private nutritionistService: NutritionistService) {}
 
-  @Get(':personId')
-  async getNutritionistByPersonId(@Param('id') id: string) {
-    return this.nutritionistService.getNutritionistByPersonId(id);
+  @Get('/person/:personId')
+  async getNutritionistByPersonId(@Param('personId') personId: string) {
+    return this.nutritionistService.getByByPersonId(personId);
   }
 
   @Roles(ROLE.NUTRITIONIST, ROLE.ADMIN)
-  @Post('register/appointment')
-  async createAppointment(@Body() createAppointmentDto: CreateAppointmentDto) {
-    return this.nutritionistService.createAppointment(createAppointmentDto);
+  @Post(':nutritionistId/appointment')
+  async createAppointment(
+    @Param('nutritionistId') nutritionistId: string,
+    @Body() createAppointmentDto: CreateAppointmentDto,
+  ) {
+    return this.nutritionistService.createAppointment(
+      nutritionistId,
+      createAppointmentDto,
+    );
   }
 
-  @Post('register')
+  @Post()
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: User })
   @Public()

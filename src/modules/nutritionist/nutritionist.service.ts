@@ -16,6 +16,7 @@ import { RegisterNutritionistDto } from './validators/register-nutritionist.dto'
 import { PatientService } from '../patient/patient.service';
 import { UserService } from '../user/user.service';
 import { CreateAppointmentDto } from './validators/create-appointment.dto';
+import { FindOptions } from 'sequelize';
 
 @Injectable()
 export class NutritionistService {
@@ -60,7 +61,23 @@ export class NutritionistService {
     return payload;
   }
 
-  async getNutritionistByPersonId(personId: string) {
+  async getById(
+    id: string,
+    options: Omit<FindOptions<Nutritionist>, 'where'> = {},
+  ) {
+    const patient = await this.nutritionistModel.findOne({
+      where: { id },
+      ...options,
+    });
+
+    if (!patient) {
+      throw new NotFoundException('Paciente não encontrado');
+    }
+
+    return patient.toJSON();
+  }
+
+  async getByByPersonId(personId: string) {
     const nutritionist = await this.nutritionistModel.findOne({
       where: { personId },
     });
@@ -72,14 +89,17 @@ export class NutritionistService {
     return nutritionist.toJSON();
   }
 
-  async createAppointment({
-    appointmentDate,
-    notificationTimes,
-    patientId,
-  }: CreateAppointmentDto) {
+  async createAppointment(
+    nutritionistId: string,
+    { appointmentDate, notificationTimes, patientId }: CreateAppointmentDto,
+  ) {
     const { user } = this.cls.get();
 
-    const nutritionist = await this.getNutritionistByPersonId(user.personId);
+    const nutritionist = await this.getById(nutritionistId);
+
+    if (nutritionist.id !== user.id) {
+      throw new BadRequestException('Nutricionista inválido');
+    }
 
     const appointmentDateNormalized = new Date(appointmentDate);
 

@@ -29,10 +29,10 @@ export class ClinicalEvaluation extends Model<ClinicalEvaluation> {
   id: string;
 
   @Column({ type: DataType.STRING })
-  medicationsAndSupplementsUsed?: string;
+  medicationsAndSupplementsUsed: string;
 
   @Column({ type: DataType.STRING })
-  weightLossTreatmentsPerformed?: string;
+  weightLossTreatmentsPerformed: string;
 
   @Column({ type: DataType.ENUM, values: Object.values(SMOKER_STATUS) })
   smokerStatus: SMOKER_STATUS;
@@ -47,10 +47,10 @@ export class ClinicalEvaluation extends Model<ClinicalEvaluation> {
   alcoholicDescription?: string;
 
   @Column({ type: DataType.STRING })
-  physicalActivityDescription?: string;
+  physicalActivityDescription: string;
 
   @Column({ type: DataType.STRING })
-  spareTimeDescription?: string;
+  spareTimeDescription: string;
 
   @Column({ type: DataType.ENUM, values: Object.values(EATING_BEHAVIOR) })
   eatingBehavior: EATING_BEHAVIOR;

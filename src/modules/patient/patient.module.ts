@@ -5,10 +5,15 @@ import { PatientService } from './patient.service';
 import { PatientController } from './patient.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
+import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
 
 @Module({
   providers: [PatientService],
-  imports: [SequelizeModule.forFeature([Patient]), AuthModule, UserModule],
+  imports: [
+    SequelizeModule.forFeature([Patient, ClinicalEvaluation]),
+    AuthModule,
+    UserModule,
+  ],
   exports: [PatientService],
   controllers: [PatientController],
 })
