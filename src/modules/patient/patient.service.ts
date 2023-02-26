@@ -1,14 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { ClsService } from 'nestjs-cls';
 import { FindOptions } from 'sequelize';
 import { ROLE } from 'src/constants/user';
 import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
 import { Patient } from 'src/models/patient.model';
 import { Person } from 'src/models/person.model';
+import { AppStore } from 'src/types/services';
 import { AuthService } from '../auth/auth.service';
 import { UserService } from '../user/user.service';
 import { RegisterClinicalEvaluationDto } from './validators/register-clinical-evaluation.dto';
 import { RegisterPatientDto } from './validators/register-patient.dto';
+import { UpdatePatientDto } from './validators/update-patient.dto';
 
 @Injectable()
 export class PatientService {
@@ -18,6 +26,7 @@ export class PatientService {
     private clinicalEvaluationModel: typeof ClinicalEvaluation,
     private authService: AuthService,
     private userService: UserService,
+    private readonly cls: ClsService<AppStore>,
   ) {}
 
   async create(data: RegisterPatientDto) {
@@ -44,6 +53,35 @@ export class PatientService {
     };
 
     return payload;
+  }
+
+  private async update(patientId: string, patient: UpdatePatientDto) {
+    try {
+      const [affectCount] = await this.patientModel.update(
+        { ...patient },
+        {
+          where: { id: patientId },
+        },
+      );
+
+      if (affectCount === 0) {
+        throw new Error('Paciente inválido');
+      }
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
+  }
+
+  async updatePatient(patientId: string, patientData: UpdatePatientDto) {
+    const { user } = this.cls.get();
+
+    const patient = await this.getById(patientId);
+
+    if (user.role === ROLE.PATIENT && patient.personId !== user.personId) {
+      throw new UnauthorizedException();
+    }
+
+    await this.update(patientId, patientData);
   }
 
   async getById(id: string, options: Omit<FindOptions<Patient>, 'where'> = {}) {

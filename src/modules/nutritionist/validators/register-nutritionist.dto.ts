@@ -1,11 +1,12 @@
 import { ApiHideProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   Length,
   IsString,
   MinLength,
   IsBoolean,
   IsOptional,
-  IsDateString,
+  IsDate,
 } from 'class-validator';
 import { BaseAuthDto } from '../../auth/validators/base-auth.dto';
 
@@ -14,8 +15,9 @@ export class RegisterNutritionistDto extends BaseAuthDto {
   @Length(4, 50)
   name: string;
 
-  @IsDateString()
-  birthdayDate: string;
+  @Type(() => Date)
+  @IsDate()
+  birthdayDate: Date;
 
   @IsString()
   @MinLength(5)

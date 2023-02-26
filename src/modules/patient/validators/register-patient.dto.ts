@@ -1,9 +1,10 @@
+import { Type } from 'class-transformer';
 import {
   Length,
   IsString,
-  IsDateString,
   IsEnum,
   IsPhoneNumber,
+  IsDate,
 } from 'class-validator';
 import { CIVIL_STATUS, GENDER, SEX } from 'src/constants/enum';
 import { BaseAuthDto } from '../../auth/validators/base-auth.dto';
@@ -13,8 +14,9 @@ export class RegisterPatientDto extends BaseAuthDto {
   @Length(4, 50)
   name: string;
 
-  @IsDateString()
-  birthdayDate: string;
+  @Type(() => Date)
+  @IsDate()
+  birthdayDate: Date;
 
   @IsString()
   @IsEnum(SEX)

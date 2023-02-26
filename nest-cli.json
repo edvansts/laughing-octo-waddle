@@ -10,7 +10,8 @@
           "dtoFileNameSuffix": [
             ".dto.ts",
             ".validator.ts",
-            ".model.ts"
+            ".model.ts",
+            ".response.ts"
           ]
         }
       }

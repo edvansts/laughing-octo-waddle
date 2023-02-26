@@ -5,10 +5,11 @@ import { Roles } from 'src/config/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/config/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/config/guards/roles.guard';
 import { ROLE } from 'src/constants/user';
-import { User } from 'src/models/user.model';
 import { RegisterNutritionistDto } from './validators/register-nutritionist.dto';
 import { NutritionistService } from './nutritionist.service';
 import { CreateAppointmentDto } from './validators/create-appointment.dto';
+import { CreateNutritionistResponse } from './response/create-nutritionist.response';
+import { Appointment } from 'src/models/appointment.model';
 
 @ApiBearerAuth()
 @ApiTags('nutritionist')
@@ -25,6 +26,7 @@ export class NutritionistController {
 
   @Roles(ROLE.NUTRITIONIST, ROLE.ADMIN)
   @Post(':nutritionistId/appointment')
+  @ApiCreatedResponse({ type: Appointment })
   async createAppointment(
     @Param('nutritionistId') nutritionistId: string,
     @Body() createAppointmentDto: CreateAppointmentDto,
@@ -37,7 +39,7 @@ export class NutritionistController {
 
   @Post()
   @ApiBearerAuth()
-  @ApiCreatedResponse({ type: User })
+  @ApiCreatedResponse({ type: CreateNutritionistResponse })
   @Public()
   @Roles(ROLE.ADMIN)
   async createNutritionist(@Body() nutritionist: RegisterNutritionistDto) {

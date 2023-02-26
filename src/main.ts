@@ -10,7 +10,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get('PORT') || 3000;
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   const config = new DocumentBuilder()
     .setTitle('Nutri')
