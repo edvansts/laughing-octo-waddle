@@ -11,6 +11,7 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiGoneResponse,
+  ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Roles } from 'src/config/decorators/roles.decorator';
@@ -52,6 +53,13 @@ export class PatientController {
     @Body() patient: UpdatePatientDto,
   ) {
     return this.patientService.updatePatient(patientId, patient);
+  }
+
+  @Get(':patientId/clinical-evaluation')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: ClinicalEvaluation })
+  async getClinicalEvaluation(@Param('patientId') patientId: string) {
+    return this.patientService.getClinicalEvaluationById(patientId);
   }
 
   @Post(':patientId/clinical-evaluation')

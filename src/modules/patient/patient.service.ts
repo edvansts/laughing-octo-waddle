@@ -55,6 +55,16 @@ export class PatientService {
     return payload;
   }
 
+  private isSamePatientAsUser(patient: Patient) {
+    const { user } = this.cls.get();
+
+    if (user.role === ROLE.PATIENT && patient.personId !== user.personId) {
+      return false;
+    }
+
+    return true;
+  }
+
   private async update(patientId: string, patient: UpdatePatientDto) {
     try {
       const [affectCount] = await this.patientModel.update(
@@ -73,11 +83,9 @@ export class PatientService {
   }
 
   async updatePatient(patientId: string, patientData: UpdatePatientDto) {
-    const { user } = this.cls.get();
-
     const patient = await this.getById(patientId);
 
-    if (user.role === ROLE.PATIENT && patient.personId !== user.personId) {
+    if (!this.isSamePatientAsUser(patient)) {
       throw new UnauthorizedException();
     }
 
@@ -105,6 +113,18 @@ export class PatientService {
     }
 
     return patient.toJSON();
+  }
+
+  async getClinicalEvaluationById(patientId: string) {
+    const patient = await this.getById(patientId, {
+      include: ClinicalEvaluation,
+    });
+
+    if (!this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException();
+    }
+
+    return patient.clinicalEvaluation;
   }
 
   async createClinicalEvaluation(
