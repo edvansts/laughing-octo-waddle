@@ -13,9 +13,12 @@ import { Patient } from 'src/models/patient.model';
 import { Person } from 'src/models/person.model';
 import { AppStore } from 'src/types/services';
 import { AuthService } from '../auth/auth.service';
+import { FoodConsumptionService } from '../food-consumption/food-consumption.service';
 import { UserService } from '../user/user.service';
 import { RegisterClinicalEvaluationDto } from './validators/register-clinical-evaluation.dto';
+import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption';
 import { RegisterPatientDto } from './validators/register-patient.dto';
+import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-consumption';
 import { UpdatePatientDto } from './validators/update-patient.dto';
 
 @Injectable()
@@ -24,6 +27,7 @@ export class PatientService {
     @InjectModel(Patient) private patientModel: typeof Patient,
     @InjectModel(ClinicalEvaluation)
     private clinicalEvaluationModel: typeof ClinicalEvaluation,
+    private foodConsumptionService: FoodConsumptionService,
     private authService: AuthService,
     private userService: UserService,
     private readonly cls: ClsService<AppStore>,
@@ -86,7 +90,7 @@ export class PatientService {
     const patient = await this.getById(patientId);
 
     if (!this.isSamePatientAsUser(patient)) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Acesso não autorizado');
     }
 
     await this.update(patientId, patientData);
@@ -121,7 +125,7 @@ export class PatientService {
     });
 
     if (!this.isSamePatientAsUser(patient)) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Acesso não autorizado');
     }
 
     return patient.clinicalEvaluation;
@@ -139,5 +143,40 @@ export class PatientService {
     });
 
     return newClinicalEvaluation;
+  }
+
+  async createDailyFoodConsumption(
+    patientId: string,
+    data: RegisterDailyFoodConsumptionDto,
+  ) {
+    const patient = await this.getById(patientId, {
+      include: ClinicalEvaluation,
+    });
+
+    if (!this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    return this.foodConsumptionService.create(patient.id, data);
+  }
+
+  async updateDailyFoodConsumption(
+    patientId: string,
+    foodConsumptionId: string,
+    data: UpdateDailyFoodConsumptionDto,
+  ) {
+    const patient = await this.getById(patientId, {
+      include: ClinicalEvaluation,
+    });
+
+    if (!this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    return this.foodConsumptionService.update(
+      patient.id,
+      foodConsumptionId,
+      data,
+    );
   }
 }

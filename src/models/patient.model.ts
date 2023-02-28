@@ -17,6 +17,7 @@ import { CIVIL_STATUS, GENDER, SEX } from 'src/constants/enum';
 import { Person } from './person.model';
 import { PhysicalEvaluation } from './physical-evaluation.model';
 import { BR_PHONE_REGEX } from 'src/constants/regex';
+import { FoodConsumption } from './food-consumption.model';
 
 @ApiExtraModels()
 @Table
@@ -91,4 +92,7 @@ export class Patient extends Model<Patient> {
 
   @HasOne(() => ClinicalEvaluation)
   clinicalEvaluation: ClinicalEvaluation;
+
+  @HasMany(() => FoodConsumption)
+  foodConsumptions: FoodConsumption[];
 }

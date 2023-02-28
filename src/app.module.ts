@@ -21,6 +21,8 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { Notification } from './models/notification.model';
 import { PushInfo } from './models/push-info.model';
 import { ClsModule } from 'nestjs-cls';
+import { FoodConsumption } from './models/food-consumption.model';
+import { FoodRecord } from './models/food-record.model';
 
 @Module({
   imports: [
@@ -56,6 +58,8 @@ import { ClsModule } from 'nestjs-cls';
         ClinicalEvaluation,
         Notification,
         PushInfo,
+        FoodConsumption,
+        FoodRecord,
       ],
       uri: process.env.DB_URI,
       autoLoadModels: true,
