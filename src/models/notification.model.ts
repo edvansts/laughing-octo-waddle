@@ -17,8 +17,8 @@ export class Notification extends Model<Notification> {
   })
   id: string;
 
-  @Column({ type: DataType.DATE })
-  scheduleDate: Date;
+  @Column({ type: DataType.DATE, allowNull: true })
+  scheduleDate?: Date;
 
   @Column({ type: DataType.STRING, allowNull: false })
   message: string;

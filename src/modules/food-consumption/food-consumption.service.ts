@@ -85,4 +85,13 @@ export class FoodConsumptionService {
 
     return payload;
   }
+
+  async getByPatient(patientId: string) {
+    const foodConsumptions = await this.foodConsumptionModel.findAll({
+      where: { patientId },
+      include: FoodRecord,
+    });
+
+    return foodConsumptions;
+  }
 }

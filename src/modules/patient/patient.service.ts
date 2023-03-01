@@ -30,7 +30,7 @@ export class PatientService {
     private foodConsumptionService: FoodConsumptionService,
     private authService: AuthService,
     private userService: UserService,
-    private readonly cls: ClsService<AppStore>,
+    private readonly clsService: ClsService<AppStore>,
   ) {}
 
   async create(data: RegisterPatientDto) {
@@ -60,7 +60,7 @@ export class PatientService {
   }
 
   private isSamePatientAsUser(patient: Patient) {
-    const { user } = this.cls.get();
+    const { user } = this.clsService.get();
 
     if (user.role === ROLE.PATIENT && patient.personId !== user.personId) {
       return false;
@@ -149,9 +149,7 @@ export class PatientService {
     patientId: string,
     data: RegisterDailyFoodConsumptionDto,
   ) {
-    const patient = await this.getById(patientId, {
-      include: ClinicalEvaluation,
-    });
+    const patient = await this.getById(patientId);
 
     if (!this.isSamePatientAsUser(patient)) {
       throw new UnauthorizedException('Acesso não autorizado');
@@ -165,9 +163,7 @@ export class PatientService {
     foodConsumptionId: string,
     data: UpdateDailyFoodConsumptionDto,
   ) {
-    const patient = await this.getById(patientId, {
-      include: ClinicalEvaluation,
-    });
+    const patient = await this.getById(patientId);
 
     if (!this.isSamePatientAsUser(patient)) {
       throw new UnauthorizedException('Acesso não autorizado');
@@ -178,5 +174,19 @@ export class PatientService {
       foodConsumptionId,
       data,
     );
+  }
+
+  async getDailyFoodConsumptions(patientId: string) {
+    const { user } = this.clsService.get();
+
+    const patient = await this.getById(patientId, {
+      include: ClinicalEvaluation,
+    });
+
+    if (user.role === ROLE.PATIENT && !this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    return this.foodConsumptionService.getByPatient(patient.id);
   }
 }

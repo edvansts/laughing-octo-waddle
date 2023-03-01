@@ -115,4 +115,12 @@ export class PatientController {
       foodConsumption,
     );
   }
+
+  @Get(':patientId/food-consumption')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: [FoodConsumption] })
+  @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
+  async getPatientFoodConsumptions(@Param('patientId') patientId: string) {
+    return this.patientService.getDailyFoodConsumptions(patientId);
+  }
 }
