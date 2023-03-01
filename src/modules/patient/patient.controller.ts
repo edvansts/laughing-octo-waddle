@@ -20,8 +20,10 @@ import { RolesGuard } from 'src/config/guards/roles.guard';
 import { ROLE } from 'src/constants/user';
 import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
 import { FoodConsumption } from 'src/models/food-consumption.model';
+import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
 import { PatientService } from './patient.service';
 import { CreatePatientResponse } from './response/create-patient.response';
+import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation';
 import { RegisterClinicalEvaluationDto } from './validators/register-clinical-evaluation.dto';
 import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption';
 import { RegisterPatientDto } from './validators/register-patient.dto';
@@ -120,7 +122,29 @@ export class PatientController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: [FoodConsumption] })
   @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
-  async getPatientFoodConsumptions(@Param('patientId') patientId: string) {
+  async getDailyFoodConsumptions(@Param('patientId') patientId: string) {
     return this.patientService.getDailyFoodConsumptions(patientId);
+  }
+
+  @Post(':patientId/physical-evalution')
+  @ApiBearerAuth()
+  @ApiCreatedResponse({ type: PhysicalEvaluation })
+  @Roles(ROLE.NUTRITIONIST, ROLE.ADMIN)
+  async createPhysicalEvaluation(
+    @Param('patientId') patientId: string,
+    @Body() physicalEvaluation: CreatePhysicalEvaluationDto,
+  ) {
+    return this.patientService.createPhysicalEvaluation(
+      patientId,
+      physicalEvaluation,
+    );
+  }
+
+  @Get(':patientId/physical-evalution')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: [PhysicalEvaluation] })
+  @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
+  async getPhysicalEvaluations(@Param('patientId') patientId: string) {
+    return this.patientService.getPhysicalEvaluations(patientId);
   }
 }

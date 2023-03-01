@@ -7,11 +7,16 @@ import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
 import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
 import { FoodConsumptionModule } from '../food-consumption/food-consumption.module';
+import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
 
 @Module({
   providers: [PatientService],
   imports: [
-    SequelizeModule.forFeature([Patient, ClinicalEvaluation]),
+    SequelizeModule.forFeature([
+      Patient,
+      ClinicalEvaluation,
+      PhysicalEvaluation,
+    ]),
     AuthModule,
     UserModule,
     FoodConsumptionModule,

@@ -11,10 +11,12 @@ import { ROLE } from 'src/constants/user';
 import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
 import { Patient } from 'src/models/patient.model';
 import { Person } from 'src/models/person.model';
+import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
 import { AppStore } from 'src/types/services';
 import { AuthService } from '../auth/auth.service';
 import { FoodConsumptionService } from '../food-consumption/food-consumption.service';
 import { UserService } from '../user/user.service';
+import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation';
 import { RegisterClinicalEvaluationDto } from './validators/register-clinical-evaluation.dto';
 import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption';
 import { RegisterPatientDto } from './validators/register-patient.dto';
@@ -27,6 +29,8 @@ export class PatientService {
     @InjectModel(Patient) private patientModel: typeof Patient,
     @InjectModel(ClinicalEvaluation)
     private clinicalEvaluationModel: typeof ClinicalEvaluation,
+    @InjectModel(PhysicalEvaluation)
+    private physicalEvaluationModel: typeof PhysicalEvaluation,
     private foodConsumptionService: FoodConsumptionService,
     private authService: AuthService,
     private userService: UserService,
@@ -188,5 +192,37 @@ export class PatientService {
     }
 
     return this.foodConsumptionService.getByPatient(patient.id);
+  }
+
+  async createPhysicalEvaluation(
+    patientId: string,
+    data: CreatePhysicalEvaluationDto,
+  ) {
+    const patient = await this.getById(patientId);
+
+    const physicalEvaluation = await this.physicalEvaluationModel.create({
+      ...data,
+      patientId: patient.id,
+    });
+
+    return physicalEvaluation;
+  }
+
+  async getPhysicalEvaluations(patientId: string) {
+    const { user } = this.clsService.get();
+
+    const patient = await this.getById(patientId, {
+      include: ClinicalEvaluation,
+    });
+
+    if (user.role === ROLE.PATIENT && !this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    const physicalEvaluations = await this.physicalEvaluationModel.findAll({
+      where: { patientId: patient.id },
+    });
+
+    return physicalEvaluations;
   }
 }

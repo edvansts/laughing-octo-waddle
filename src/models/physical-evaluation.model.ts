@@ -19,6 +19,48 @@ export class PhysicalEvaluation extends Model<PhysicalEvaluation> {
   })
   id: string;
 
+  @Column({ type: DataType.STRING })
+  hair: string;
+
+  @Column({ type: DataType.STRING })
+  bichartBalls: string;
+
+  @Column({ type: DataType.STRING })
+  facialSkin: string;
+
+  @Column({ type: DataType.STRING })
+  lips: string;
+
+  @Column({ type: DataType.STRING })
+  tongue: string;
+
+  @Column({ type: DataType.STRING })
+  eyes: string;
+
+  @Column({ type: DataType.STRING })
+  trunkSkin: string;
+
+  @Column({ type: DataType.STRING })
+  nails: string;
+
+  @Column({ type: DataType.STRING })
+  armpits: string;
+
+  @Column({ type: DataType.STRING })
+  upperLimbs: string;
+
+  @Column({ type: DataType.STRING })
+  lowerLimbsLegs: string;
+
+  @Column({ type: DataType.STRING })
+  lowerLimbsFeet: string;
+
+  @Column({ type: DataType.STRING })
+  otherInformations?: string;
+
+  @Column({ type: DataType.STRING })
+  historyWeightGain: string;
+
   @ForeignKey(() => Patient)
   @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })
   patientId: string;
