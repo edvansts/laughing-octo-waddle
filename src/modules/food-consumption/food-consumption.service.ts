@@ -5,7 +5,7 @@ import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { FoodConsumption } from 'src/models/food-consumption.model';
 import { FoodRecord } from 'src/models/food-record.model';
-import { RegisterDailyFoodConsumptionDto } from '../patient/validators/register-daily-food-consumption';
+import { RegisterDailyFoodConsumptionDto } from '../patient/validators/register-daily-food-consumption.dto';
 import { UpdateDailyFoodConsumptionDto } from '../patient/validators/update-daily-food-consumption';
 
 @Injectable()

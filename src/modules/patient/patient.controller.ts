@@ -25,7 +25,7 @@ import { PatientService } from './patient.service';
 import { CreatePatientResponse } from './response/create-patient.response';
 import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation';
 import { RegisterClinicalEvaluationDto } from './validators/register-clinical-evaluation.dto';
-import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption';
+import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption.dto';
 import { RegisterPatientDto } from './validators/register-patient.dto';
 import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-consumption';
 import { UpdatePatientDto } from './validators/update-patient.dto';

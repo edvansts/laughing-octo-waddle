@@ -7,12 +7,14 @@ export enum PRIORITY {
 export enum SEX {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
+  NON_BINARY = 'NON_BINARY',
   OTHER = 'OTHER',
 }
 
 export enum GENDER {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
+  NON_BINARY = 'NON_BINARY',
   OTHER = 'OTHER',
 }
 

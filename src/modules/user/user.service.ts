@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { compare } from 'bcrypt';
 import { isEmail, isObject } from 'class-validator';
 import { ClsService } from 'nestjs-cls';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { PushInfo } from 'src/models/push-info.model';
 import { User } from 'src/models/user.model';
 import { AppStore } from 'src/types/services';
@@ -60,7 +60,10 @@ export class UserService {
     return jsonUser;
   }
 
-  async create({ email, cpf, name, password, role }: CreateUserDto) {
+  async create(
+    { email, cpf, name, password, role }: CreateUserDto,
+    transaction?: Transaction,
+  ) {
     try {
       const alreadyCreatedPerson = await this.personService.findByCpf(cpf);
 
@@ -84,14 +87,17 @@ export class UserService {
 
       const newPerson =
         alreadyCreatedPerson ||
-        (await this.personService.create({ cpf, name }));
+        (await this.personService.create({ cpf, name }, transaction));
 
-      const newUser = await this.userModel.create({
-        password,
-        role,
-        personId: newPerson.id,
-        email,
-      });
+      const newUser = await this.userModel.create(
+        {
+          password,
+          role,
+          personId: newPerson.id,
+          email,
+        },
+        { transaction },
+      );
 
       return newUser;
     } catch (error) {
@@ -99,9 +105,18 @@ export class UserService {
     }
   }
 
-  private async getPushInfosByUserId(...userIds: string[]) {
+  private async getPushInfosById(...ids: string[]) {
     const pushInfos = await this.pushInfoModel.findAll({
-      where: { id: { [Op.in]: userIds } },
+      where: { id: { [Op.in]: ids } },
+    });
+
+    return pushInfos;
+  }
+
+  private async getPushInfosByPersonIds(...personIds: string[]) {
+    const pushInfos = await this.pushInfoModel.findAll({
+      where: { '$user.personId$': { [Op.in]: personIds } },
+      include: { model: User },
     });
 
     return pushInfos;
@@ -117,7 +132,7 @@ export class UserService {
     try {
       const { user } = this.cls.get();
 
-      const pushInfos = await this.getPushInfosByUserId(user.id);
+      const pushInfos = await this.getPushInfosById(user.id);
 
       if (pushInfos.length === 0) {
         return;
@@ -139,8 +154,16 @@ export class UserService {
     }
   }
 
-  async getPushTokensByUserId(...userIds: string[]) {
-    const pushInfos = await this.getPushInfosByUserId(...userIds);
+  async getPushTokensById(...userIds: string[]) {
+    const pushInfos = await this.getPushInfosById(...userIds);
+
+    const tokens = pushInfos.map(({ token }) => token);
+
+    return tokens;
+  }
+
+  async getPushTokensByPersonId(...personIds: string[]) {
+    const pushInfos = await this.getPushInfosByPersonIds(...personIds);
 
     const tokens = pushInfos.map(({ token }) => token);
 

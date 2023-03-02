@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { isEmpty } from 'class-validator';
 import { addSeconds } from 'date-fns';
 import { ExpoPushMessage } from 'expo-server-sdk';
 import { Op } from 'sequelize';
@@ -63,12 +64,17 @@ export class NotificationService {
 
   private async sendNotifications(
     messages: ExpoPushMessage[],
-    notificationIds: string[],
+    notificationIds: string[] = [],
   ) {
-    await Promise.all([
-      await this.expoService.sendPushMessages(...messages),
-      await this.markAsSended(...notificationIds),
-    ]);
+    const promises: Promise<any>[] = [];
+
+    promises.push(this.expoService.sendPushMessages(...messages));
+
+    if (!isEmpty(notificationIds)) {
+      promises.push(this.markAsSended(...notificationIds));
+    }
+
+    await Promise.all(promises);
   }
 
   async checkNotifications() {
@@ -83,9 +89,7 @@ export class NotificationService {
 
     const messages: ExpoPushMessage[] = await Promise.all(
       notificationsToSend?.map(async ({ userIds, ...notification }) => {
-        const pushTokens = await this.userService.getPushTokensByUserId(
-          ...userIds,
-        );
+        const pushTokens = await this.userService.getPushTokensById(...userIds);
 
         return {
           ...notification,
@@ -97,5 +101,19 @@ export class NotificationService {
     const notificationIds = notificationsToSend.map(({ id }) => id);
 
     await this.sendNotifications(messages, notificationIds);
+  }
+
+  async notifyUsersAboutFoodConsumptionRegister(personIds: string[]) {
+    const pushTokens = await this.userService.getPushTokensByPersonId(
+      ...personIds,
+    );
+
+    const message: ExpoPushMessage = {
+      to: pushTokens,
+      title: 'Ainda dá tempo!',
+      body: 'Entra e cadastra rapidinho seu consumo alimentar de hoje aqui no meu app 😟',
+    };
+
+    await this.sendNotifications([message]);
   }
 }

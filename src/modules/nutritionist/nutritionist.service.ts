@@ -17,6 +17,7 @@ import { PatientService } from '../patient/patient.service';
 import { UserService } from '../user/user.service';
 import { CreateAppointmentDto } from './validators/create-appointment.dto';
 import { FindOptions } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
 export class NutritionistService {
@@ -27,38 +28,50 @@ export class NutritionistService {
     private authService: AuthService,
     private userService: UserService,
     private readonly cls: ClsService<AppStore>,
+    private readonly sequelize: Sequelize,
   ) {}
 
   async create({ crn, isAdmin = false, ...data }: RegisterNutritionistDto) {
-    const { user } = this.cls.get();
+    const transaction = await this.sequelize.transaction();
 
-    const nutritionistRole =
-      isAdmin && user.role === ROLE.ADMIN ? ROLE.ADMIN : ROLE.NUTRITIONIST;
+    try {
+      const { user } = this.cls.get();
+      const nutritionistRole =
+        isAdmin && user.role === ROLE.ADMIN ? ROLE.ADMIN : ROLE.NUTRITIONIST;
 
-    const newUser = await this.userService.create({
-      ...data,
-      role: nutritionistRole,
-    });
+      const newUser = await this.userService.create(
+        {
+          ...data,
+          role: nutritionistRole,
+        },
+        transaction,
+      );
 
-    const nutritionist = await this.nutritionistModel.create(
-      {
-        personId: newUser.personId,
-        crn,
-      },
-      { include: Person },
-    );
+      const nutritionist = await this.nutritionistModel.create(
+        {
+          personId: newUser.personId,
+          crn,
+        },
+        { include: Person, transaction },
+      );
 
-    const token = await this.authService.signPayload({
-      email: data.email,
-      password: data.password,
-    });
+      const token = await this.authService.signPayload({
+        email: data.email,
+        password: data.password,
+      });
 
-    const payload = {
-      nutritionist: nutritionist.toJSON(),
-      token,
-    };
+      const payload = {
+        nutritionist: nutritionist.toJSON(),
+        token,
+      };
 
-    return payload;
+      transaction.commit();
+
+      return payload;
+    } catch (err) {
+      transaction.rollback();
+      throw err;
+    }
   }
 
   async getById(

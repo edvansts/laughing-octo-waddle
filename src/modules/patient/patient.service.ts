@@ -5,10 +5,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { endOfDay, startOfDay } from 'date-fns';
 import { ClsService } from 'nestjs-cls';
+import { Op } from 'sequelize';
 import { FindOptions } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import { ROLE } from 'src/constants/user';
 import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
+import { FoodConsumption } from 'src/models/food-consumption.model';
 import { Patient } from 'src/models/patient.model';
 import { Person } from 'src/models/person.model';
 import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
@@ -18,7 +22,7 @@ import { FoodConsumptionService } from '../food-consumption/food-consumption.ser
 import { UserService } from '../user/user.service';
 import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation';
 import { RegisterClinicalEvaluationDto } from './validators/register-clinical-evaluation.dto';
-import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption';
+import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption.dto';
 import { RegisterPatientDto } from './validators/register-patient.dto';
 import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-consumption';
 import { UpdatePatientDto } from './validators/update-patient.dto';
@@ -35,32 +39,55 @@ export class PatientService {
     private authService: AuthService,
     private userService: UserService,
     private readonly clsService: ClsService<AppStore>,
+    private sequelize: Sequelize,
   ) {}
 
-  async create(data: RegisterPatientDto) {
-    const user = await this.userService.create({
-      ...data,
-      role: ROLE.PATIENT,
-    });
+  async create({
+    email,
+    password,
+    cpf,
+    name,
+    ...patientData
+  }: RegisterPatientDto) {
+    const transaction = await this.sequelize.transaction();
 
-    const patient = await this.patientModel.create(
-      {
-        personId: user.personId,
-      },
-      { include: Person },
-    );
+    try {
+      const user = await this.userService.create(
+        {
+          email,
+          cpf,
+          name,
+          password,
+          role: ROLE.PATIENT,
+        },
+        transaction,
+      );
 
-    const token = await this.authService.signPayload({
-      email: data.email,
-      password: data.password,
-    });
+      const patient = await this.patientModel.create(
+        {
+          ...patientData,
+          personId: user.personId,
+        },
+        { include: Person, transaction },
+      );
 
-    const payload = {
-      patient: patient.toJSON(),
-      token,
-    };
+      const token = await this.authService.signPayload({
+        email,
+        password,
+      });
 
-    return payload;
+      const payload = {
+        patient: patient.toJSON(),
+        token,
+      };
+
+      transaction.commit();
+
+      return payload;
+    } catch (err) {
+      transaction.rollback();
+      throw err;
+    }
   }
 
   private isSamePatientAsUser(patient: Patient) {
@@ -224,5 +251,47 @@ export class PatientService {
     });
 
     return physicalEvaluations;
+  }
+
+  async checkSendDailyFoodConsumptions() {
+    const todayRange: [Date, Date] = [
+      startOfDay(new Date()),
+      endOfDay(new Date()),
+    ];
+
+    const patients = await this.patientModel.findAll({
+      attributes: [
+        [
+          this.sequelize.fn('COUNT', 'foodConsumptions.id'),
+          'foodConsumptionsCount',
+        ],
+      ],
+      where: {
+        [Op.or]: [
+          {
+            [Op.not]: {
+              '$foodConsumptions.linkedDay$': {
+                [Op.between]: todayRange,
+              },
+            },
+          },
+        ],
+      },
+      group: ['foodConsumptions.id'],
+      include: {
+        model: FoodConsumption,
+        attributes: [
+          [
+            this.sequelize.fn(
+              'COUNT',
+              this.sequelize.col('foodConsumptions.id'),
+            ),
+            'foodConsumptionsCount',
+          ],
+        ],
+      },
+    });
+
+    return patients;
   }
 }
