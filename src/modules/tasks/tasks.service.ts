@@ -14,9 +14,9 @@ export class TasksService {
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
-  async checkNotifications() {
+  async checkScheduledNotifications() {
     try {
-      this.logger.log('Verificating notifications');
+      this.logger.log('Verificating scheduled notifications');
 
       await this.notificationService.checkNotifications();
     } catch (err) {
@@ -24,13 +24,13 @@ export class TasksService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_DAY_AT_6PM)
   async rememberDailyFoodConsumption() {
     try {
-      this.logger.log('Verificating daily food consumptions');
+      this.logger.log('Verificating patients without daily food consumptions');
 
       const patients =
-        await this.patientService.checkSendDailyFoodConsumptions();
+        await this.patientService.getPatientsWithoutFoodConsumptionToday();
 
       if (isEmpty(patients)) {
         return;

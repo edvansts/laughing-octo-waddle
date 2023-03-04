@@ -8,6 +8,7 @@ import { UserModule } from '../user/user.module';
 import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
 import { FoodConsumptionModule } from '../food-consumption/food-consumption.module';
 import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
+import { BiochemicalEvaluation } from 'src/models/biochemical-evaluation.model';
 
 @Module({
   providers: [PatientService],
@@ -16,6 +17,7 @@ import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
       Patient,
       ClinicalEvaluation,
       PhysicalEvaluation,
+      BiochemicalEvaluation,
     ]),
     AuthModule,
     UserModule,

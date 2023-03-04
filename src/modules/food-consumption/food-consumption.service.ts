@@ -5,6 +5,8 @@ import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { FoodConsumption } from 'src/models/food-consumption.model';
 import { FoodRecord } from 'src/models/food-record.model';
+import { PaginatedResponse } from '../common/response/paginated.response';
+import { PaginationDto } from '../common/validators/pagination.dto';
 import { RegisterDailyFoodConsumptionDto } from '../patient/validators/register-daily-food-consumption.dto';
 import { UpdateDailyFoodConsumptionDto } from '../patient/validators/update-daily-food-consumption';
 
@@ -86,12 +88,20 @@ export class FoodConsumptionService {
     return payload;
   }
 
-  async getByPatient(patientId: string) {
-    const foodConsumptions = await this.foodConsumptionModel.findAll({
-      where: { patientId },
-      include: FoodRecord,
-    });
+  async getByPatient(
+    patientId: string,
+    { limit, offset }: PaginationDto,
+  ): Promise<PaginatedResponse<FoodConsumption[]>> {
+    const { count: totalCount, rows: data } =
+      await this.foodConsumptionModel.findAndCountAll({
+        where: { patientId },
+        offset,
+        limit,
+        include: FoodRecord,
+      });
 
-    return foodConsumptions;
+    console.log(data, totalCount);
+
+    return { data, totalCount };
   }
 }

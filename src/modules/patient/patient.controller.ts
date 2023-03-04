@@ -5,25 +5,36 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
+  UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiGoneResponse,
+  ApiHeader,
   ApiOkResponse,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { Roles } from 'src/config/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/config/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/config/guards/roles.guard';
 import { ROLE } from 'src/constants/user';
+import { TotalCountInterceptor } from 'src/interceptors/total-count/total-count.interceptor';
+import { BiochemicalEvaluation } from 'src/models/biochemical-evaluation.model';
 import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
 import { FoodConsumption } from 'src/models/food-consumption.model';
 import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
+import { TOTAL_COUNT_HEADER_DESCRIPTION } from '../common/constants';
+import { PaginationDto } from '../common/validators/pagination.dto';
 import { PatientService } from './patient.service';
 import { CreatePatientResponse } from './response/create-patient.response';
-import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation';
+import { CreateBiochemicalEvaluationDto } from './validators/create-biochemical-evaluation.dto';
+import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation.dto';
 import { RegisterClinicalEvaluationDto } from './validators/register-clinical-evaluation.dto';
 import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption.dto';
 import { RegisterPatientDto } from './validators/register-patient.dto';
@@ -81,13 +92,6 @@ export class PatientController {
     );
   }
 
-  @Get(':patientId/food-consumption')
-  @ApiBearerAuth()
-  @ApiOkResponse({ type: ClinicalEvaluation })
-  async getFoodConsumption(@Param('patientId') patientId: string) {
-    return this.patientService.getClinicalEvaluationById(patientId);
-  }
-
   @Post(':patientId/food-consumption')
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: FoodConsumption })
@@ -121,9 +125,16 @@ export class PatientController {
   @Get(':patientId/food-consumption')
   @ApiBearerAuth()
   @ApiOkResponse({ type: [FoodConsumption] })
+  @UseInterceptors(TotalCountInterceptor)
+  @ApiQuery({ type: PaginationDto })
+  @ApiHeader(TOTAL_COUNT_HEADER_DESCRIPTION)
+  @UsePipes(new ValidationPipe({ transform: true }))
   @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
-  async getDailyFoodConsumptions(@Param('patientId') patientId: string) {
-    return this.patientService.getDailyFoodConsumptions(patientId);
+  async getFoodConsumptions(
+    @Param('patientId') patientId: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.patientService.getDailyFoodConsumptions(patientId, pagination);
   }
 
   @Post(':patientId/physical-evalution')
@@ -142,9 +153,45 @@ export class PatientController {
 
   @Get(':patientId/physical-evalution')
   @ApiBearerAuth()
+  @UseInterceptors(TotalCountInterceptor)
+  @ApiQuery({ type: PaginationDto })
+  @ApiHeader(TOTAL_COUNT_HEADER_DESCRIPTION)
   @ApiOkResponse({ type: [PhysicalEvaluation] })
+  @UsePipes(new ValidationPipe({ transform: true }))
   @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
-  async getPhysicalEvaluations(@Param('patientId') patientId: string) {
-    return this.patientService.getPhysicalEvaluations(patientId);
+  async getPhysicalEvaluations(
+    @Param('patientId') patientId: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.patientService.getPhysicalEvaluations(patientId, pagination);
+  }
+
+  @Post(':patientId/biochemical-evaluation')
+  @ApiBearerAuth()
+  @ApiCreatedResponse({ type: BiochemicalEvaluation })
+  @Roles(ROLE.NUTRITIONIST, ROLE.ADMIN)
+  async createBiochemicalEvaluation(
+    @Param('patientId') patientId: string,
+    @Body() physicalEvaluation: CreateBiochemicalEvaluationDto,
+  ) {
+    return this.patientService.createBiochemicalEvaluation(
+      patientId,
+      physicalEvaluation,
+    );
+  }
+
+  @Get(':patientId/biochemical-evaluation')
+  @ApiBearerAuth()
+  @UseInterceptors(TotalCountInterceptor)
+  @ApiQuery({ type: PaginationDto })
+  @ApiHeader(TOTAL_COUNT_HEADER_DESCRIPTION)
+  @ApiOkResponse({ type: [BiochemicalEvaluation] })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
+  async getBiochemicalEvaluations(
+    @Param('patientId') patientId: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.patientService.getBiochemicalEvaluations(patientId, pagination);
   }
 }

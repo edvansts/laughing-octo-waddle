@@ -11,6 +11,7 @@ import { Op } from 'sequelize';
 import { FindOptions } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { ROLE } from 'src/constants/user';
+import { BiochemicalEvaluation } from 'src/models/biochemical-evaluation.model';
 import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
 import { FoodConsumption } from 'src/models/food-consumption.model';
 import { Patient } from 'src/models/patient.model';
@@ -18,9 +19,12 @@ import { Person } from 'src/models/person.model';
 import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
 import { AppStore } from 'src/types/services';
 import { AuthService } from '../auth/auth.service';
+import { PaginatedResponse } from '../common/response/paginated.response';
+import { PaginationDto } from '../common/validators/pagination.dto';
 import { FoodConsumptionService } from '../food-consumption/food-consumption.service';
 import { UserService } from '../user/user.service';
-import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation';
+import { CreateBiochemicalEvaluationDto } from './validators/create-biochemical-evaluation.dto';
+import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation.dto';
 import { RegisterClinicalEvaluationDto } from './validators/register-clinical-evaluation.dto';
 import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption.dto';
 import { RegisterPatientDto } from './validators/register-patient.dto';
@@ -35,6 +39,8 @@ export class PatientService {
     private clinicalEvaluationModel: typeof ClinicalEvaluation,
     @InjectModel(PhysicalEvaluation)
     private physicalEvaluationModel: typeof PhysicalEvaluation,
+    @InjectModel(BiochemicalEvaluation)
+    private biochemicalEvaluationModel: typeof BiochemicalEvaluation,
     private foodConsumptionService: FoodConsumptionService,
     private authService: AuthService,
     private userService: UserService,
@@ -207,18 +213,16 @@ export class PatientService {
     );
   }
 
-  async getDailyFoodConsumptions(patientId: string) {
+  async getDailyFoodConsumptions(patientId: string, pagination: PaginationDto) {
     const { user } = this.clsService.get();
 
-    const patient = await this.getById(patientId, {
-      include: ClinicalEvaluation,
-    });
+    const patient = await this.getById(patientId);
 
     if (user.role === ROLE.PATIENT && !this.isSamePatientAsUser(patient)) {
       throw new UnauthorizedException('Acesso não autorizado');
     }
 
-    return this.foodConsumptionService.getByPatient(patient.id);
+    return this.foodConsumptionService.getByPatient(patient.id, pagination);
   }
 
   async createPhysicalEvaluation(
@@ -235,25 +239,29 @@ export class PatientService {
     return physicalEvaluation;
   }
 
-  async getPhysicalEvaluations(patientId: string) {
+  async getPhysicalEvaluations(
+    patientId: string,
+    { limit, offset }: PaginationDto,
+  ): Promise<PaginatedResponse<PhysicalEvaluation[]>> {
     const { user } = this.clsService.get();
 
-    const patient = await this.getById(patientId, {
-      include: ClinicalEvaluation,
-    });
+    const patient = await this.getById(patientId);
 
     if (user.role === ROLE.PATIENT && !this.isSamePatientAsUser(patient)) {
       throw new UnauthorizedException('Acesso não autorizado');
     }
 
-    const physicalEvaluations = await this.physicalEvaluationModel.findAll({
-      where: { patientId: patient.id },
-    });
+    const { count, rows: data } =
+      await this.physicalEvaluationModel.findAndCountAll({
+        where: { patientId: patient.id },
+        limit,
+        offset,
+      });
 
-    return physicalEvaluations;
+    return { totalCount: count, data };
   }
 
-  async checkSendDailyFoodConsumptions() {
+  async getPatientsWithoutFoodConsumptionToday() {
     const todayRange: [Date, Date] = [
       startOfDay(new Date()),
       endOfDay(new Date()),
@@ -281,5 +289,41 @@ export class PatientService {
     });
 
     return patients;
+  }
+
+  async createBiochemicalEvaluation(
+    patientId: string,
+    data: CreateBiochemicalEvaluationDto,
+  ) {
+    const patient = await this.getById(patientId);
+
+    const biochemicalEvaluation = await this.biochemicalEvaluationModel.create({
+      ...data,
+      patientId: patient.id,
+    });
+
+    return biochemicalEvaluation;
+  }
+
+  async getBiochemicalEvaluations(
+    patientId: string,
+    { limit, offset }: PaginationDto,
+  ): Promise<PaginatedResponse<BiochemicalEvaluation[]>> {
+    const { user } = this.clsService.get();
+
+    const patient = await this.getById(patientId);
+
+    if (user.role === ROLE.PATIENT && !this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    const { count, rows: data } =
+      await this.biochemicalEvaluationModel.findAndCountAll({
+        where: { patientId: patient.id },
+        limit,
+        offset,
+      });
+
+    return { totalCount: count, data };
   }
 }
