@@ -24,7 +24,7 @@ export class TasksService {
     }
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_6PM)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async rememberDailyFoodConsumption() {
     try {
       this.logger.log('Verificating daily food consumptions');

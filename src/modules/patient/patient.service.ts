@@ -260,12 +260,6 @@ export class PatientService {
     ];
 
     const patients = await this.patientModel.findAll({
-      attributes: [
-        [
-          this.sequelize.fn('COUNT', 'foodConsumptions.id'),
-          'foodConsumptionsCount',
-        ],
-      ],
       where: {
         [Op.or]: [
           {
@@ -275,20 +269,14 @@ export class PatientService {
               },
             },
           },
+          {
+            '$foodConsumptions.id$': null,
+          },
         ],
       },
-      group: ['foodConsumptions.id'],
       include: {
         model: FoodConsumption,
-        attributes: [
-          [
-            this.sequelize.fn(
-              'COUNT',
-              this.sequelize.col('foodConsumptions.id'),
-            ),
-            'foodConsumptionsCount',
-          ],
-        ],
+        required: false,
       },
     });
 
