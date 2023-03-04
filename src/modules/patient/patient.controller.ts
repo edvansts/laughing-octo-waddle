@@ -35,11 +35,13 @@ import { PatientService } from './patient.service';
 import { CreatePatientResponse } from './response/create-patient.response';
 import { CreateBiochemicalEvaluationDto } from './validators/create-biochemical-evaluation.dto';
 import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation.dto';
-import { RegisterClinicalEvaluationDto } from './validators/register-clinical-evaluation.dto';
-import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption.dto';
-import { RegisterPatientDto } from './validators/register-patient.dto';
+import { CreateClinicalEvaluationDto } from './validators/create-clinical-evaluation.dto';
+import { CreateDailyFoodConsumptionDto } from './validators/create-daily-food-consumption.dto';
+import { CreatePatientDto } from './validators/create-patient.dto';
 import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-consumption';
 import { UpdatePatientDto } from './validators/update-patient.dto';
+import { AnthropometricEvaluation } from 'src/models/anthropometric-evaluation.model';
+import { CreateAnthropometricEvaluationDto } from './validators/create-anthropometric-evaluation.dto';
 
 @ApiTags('patient')
 @UseGuards(RolesGuard)
@@ -57,7 +59,7 @@ export class PatientController {
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: CreatePatientResponse })
   @Roles(ROLE.NUTRITIONIST, ROLE.ADMIN)
-  async createPatient(@Body() patient: RegisterPatientDto) {
+  async createPatient(@Body() patient: CreatePatientDto) {
     return this.patientService.create(patient);
   }
 
@@ -84,7 +86,7 @@ export class PatientController {
   @Roles(ROLE.NUTRITIONIST, ROLE.ADMIN)
   async createClinicalEvaluation(
     @Param('patientId') patientId: string,
-    @Body() clinicalEvaluation: RegisterClinicalEvaluationDto,
+    @Body() clinicalEvaluation: CreateClinicalEvaluationDto,
   ) {
     return this.patientService.createClinicalEvaluation(
       patientId,
@@ -98,7 +100,7 @@ export class PatientController {
   @Roles(ROLE.PATIENT)
   async createFoodConsumption(
     @Param('patientId') patientId: string,
-    @Body() foodConsumption: RegisterDailyFoodConsumptionDto,
+    @Body() foodConsumption: CreateDailyFoodConsumptionDto,
   ) {
     return this.patientService.createDailyFoodConsumption(
       patientId,
@@ -172,11 +174,11 @@ export class PatientController {
   @Roles(ROLE.NUTRITIONIST, ROLE.ADMIN)
   async createBiochemicalEvaluation(
     @Param('patientId') patientId: string,
-    @Body() physicalEvaluation: CreateBiochemicalEvaluationDto,
+    @Body() biochemicalEvaluation: CreateBiochemicalEvaluationDto,
   ) {
     return this.patientService.createBiochemicalEvaluation(
       patientId,
-      physicalEvaluation,
+      biochemicalEvaluation,
     );
   }
 
@@ -193,5 +195,37 @@ export class PatientController {
     @Query() pagination: PaginationDto,
   ) {
     return this.patientService.getBiochemicalEvaluations(patientId, pagination);
+  }
+
+  @Post(':patientId/anthropometric-evaluation')
+  @ApiBearerAuth()
+  @ApiCreatedResponse({ type: BiochemicalEvaluation })
+  @Roles(ROLE.NUTRITIONIST, ROLE.ADMIN)
+  async createAnthropometricEvaluation(
+    @Param('patientId') patientId: string,
+    @Body() anthropometricEvaluation: CreateAnthropometricEvaluationDto,
+  ) {
+    return this.patientService.createAnthropometricEvaluation(
+      patientId,
+      anthropometricEvaluation,
+    );
+  }
+
+  @Get(':patientId/anthropometric-evaluation')
+  @ApiBearerAuth()
+  @UseInterceptors(TotalCountInterceptor)
+  @ApiQuery({ type: PaginationDto })
+  @ApiHeader(TOTAL_COUNT_HEADER_DESCRIPTION)
+  @ApiOkResponse({ type: [AnthropometricEvaluation] })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
+  async getAnthropometricEvaluations(
+    @Param('patientId') patientId: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.patientService.getAnthropometricEvaluations(
+      patientId,
+      pagination,
+    );
   }
 }

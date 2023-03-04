@@ -115,6 +115,9 @@ export class BiochemicalEvaluation extends Model<BiochemicalEvaluation> {
   @Column({ type: DataType.STRING, defaultValue: '' })
   ast: string;
 
+  @Column({ type: DataType.DATE, allowNull: false })
+  examDate: Date;
+
   @ForeignKey(() => Patient)
   @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })
   patientId: string;

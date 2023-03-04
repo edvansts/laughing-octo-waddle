@@ -9,6 +9,7 @@ import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
 import { FoodConsumptionModule } from '../food-consumption/food-consumption.module';
 import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
 import { BiochemicalEvaluation } from 'src/models/biochemical-evaluation.model';
+import { AnthropometricEvaluation } from 'src/models/anthropometric-evaluation.model';
 
 @Module({
   providers: [PatientService],
@@ -18,6 +19,7 @@ import { BiochemicalEvaluation } from 'src/models/biochemical-evaluation.model';
       ClinicalEvaluation,
       PhysicalEvaluation,
       BiochemicalEvaluation,
+      AnthropometricEvaluation,
     ]),
     AuthModule,
     UserModule,

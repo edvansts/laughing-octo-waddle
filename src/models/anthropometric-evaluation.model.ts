@@ -21,6 +21,39 @@ export class AnthropometricEvaluation extends Model<AnthropometricEvaluation> {
   })
   id: string;
 
+  @Column({ type: DataType.NUMBER })
+  weight: number;
+
+  @Column({ type: DataType.NUMBER })
+  dryWeight: number;
+
+  @Column({ type: DataType.NUMBER })
+  bmi: number;
+
+  @Column({ type: DataType.NUMBER })
+  height: number;
+
+  @Column({ type: DataType.NUMBER })
+  waistCircumference: number;
+
+  @Column({ type: DataType.NUMBER })
+  abdominalCircumference: number;
+
+  @Column({ type: DataType.NUMBER })
+  hipCircumference: number;
+
+  @Column({ type: DataType.NUMBER })
+  armCircumference: number;
+
+  @Column({ type: DataType.NUMBER })
+  rightWrist: number;
+
+  @Column({ type: DataType.NUMBER })
+  neckCircumference: number;
+
+  @Column({ type: DataType.DATE, allowNull: false })
+  examDate: Date;
+
   @ForeignKey(() => Patient)
   @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })
   patientId: string;

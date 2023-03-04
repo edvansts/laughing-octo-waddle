@@ -93,6 +93,9 @@ export class ClinicalEvaluation extends Model<ClinicalEvaluation> {
   @Column({ type: DataType.STRING })
   otherClinicalHistories?: string;
 
+  @Column({ type: DataType.DATE, allowNull: false })
+  examDate: Date;
+
   @Column({
     type: DataType.JSON,
     allowNull: false,

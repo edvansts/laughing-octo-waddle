@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDate, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreatePhysicalEvaluationDto {
   @IsString()
@@ -55,4 +56,8 @@ export class CreatePhysicalEvaluationDto {
   @IsString()
   @IsNotEmpty()
   historyWeightGain: string;
+
+  @Type(() => Date)
+  @IsDate()
+  examDate: Date;
 }

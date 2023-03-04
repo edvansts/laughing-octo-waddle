@@ -25,11 +25,13 @@ import { FoodConsumptionService } from '../food-consumption/food-consumption.ser
 import { UserService } from '../user/user.service';
 import { CreateBiochemicalEvaluationDto } from './validators/create-biochemical-evaluation.dto';
 import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation.dto';
-import { RegisterClinicalEvaluationDto } from './validators/register-clinical-evaluation.dto';
-import { RegisterDailyFoodConsumptionDto } from './validators/register-daily-food-consumption.dto';
-import { RegisterPatientDto } from './validators/register-patient.dto';
+import { CreateClinicalEvaluationDto } from './validators/create-clinical-evaluation.dto';
+import { CreateDailyFoodConsumptionDto } from './validators/create-daily-food-consumption.dto';
+import { CreatePatientDto } from './validators/create-patient.dto';
 import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-consumption';
 import { UpdatePatientDto } from './validators/update-patient.dto';
+import { AnthropometricEvaluation } from 'src/models/anthropometric-evaluation.model';
+import { CreateAnthropometricEvaluationDto } from './validators/create-anthropometric-evaluation.dto';
 
 @Injectable()
 export class PatientService {
@@ -41,6 +43,8 @@ export class PatientService {
     private physicalEvaluationModel: typeof PhysicalEvaluation,
     @InjectModel(BiochemicalEvaluation)
     private biochemicalEvaluationModel: typeof BiochemicalEvaluation,
+    @InjectModel(AnthropometricEvaluation)
+    private anthropometricEvaluationModel: typeof AnthropometricEvaluation,
     private foodConsumptionService: FoodConsumptionService,
     private authService: AuthService,
     private userService: UserService,
@@ -54,7 +58,7 @@ export class PatientService {
     cpf,
     name,
     ...patientData
-  }: RegisterPatientDto) {
+  }: CreatePatientDto) {
     const transaction = await this.sequelize.transaction();
 
     try {
@@ -170,7 +174,7 @@ export class PatientService {
 
   async createClinicalEvaluation(
     patientId: string,
-    clinicalEvaluation: RegisterClinicalEvaluationDto,
+    clinicalEvaluation: CreateClinicalEvaluationDto,
   ) {
     const patient = await this.getById(patientId);
 
@@ -184,7 +188,7 @@ export class PatientService {
 
   async createDailyFoodConsumption(
     patientId: string,
-    data: RegisterDailyFoodConsumptionDto,
+    data: CreateDailyFoodConsumptionDto,
   ) {
     const patient = await this.getById(patientId);
 
@@ -319,6 +323,43 @@ export class PatientService {
 
     const { count, rows: data } =
       await this.biochemicalEvaluationModel.findAndCountAll({
+        where: { patientId: patient.id },
+        limit,
+        offset,
+      });
+
+    return { totalCount: count, data };
+  }
+
+  async createAnthropometricEvaluation(
+    patientId: string,
+    data: CreateAnthropometricEvaluationDto,
+  ) {
+    const patient = await this.getById(patientId);
+
+    const anthropometricEvaluation =
+      await this.anthropometricEvaluationModel.create({
+        ...data,
+        patientId: patient.id,
+      });
+
+    return anthropometricEvaluation;
+  }
+
+  async getAnthropometricEvaluations(
+    patientId: string,
+    { limit, offset }: PaginationDto,
+  ): Promise<PaginatedResponse<AnthropometricEvaluation[]>> {
+    const { user } = this.clsService.get();
+
+    const patient = await this.getById(patientId);
+
+    if (user.role === ROLE.PATIENT && !this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    const { count, rows: data } =
+      await this.anthropometricEvaluationModel.findAndCountAll({
         where: { patientId: patient.id },
         limit,
         offset,

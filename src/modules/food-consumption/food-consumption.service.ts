@@ -7,7 +7,7 @@ import { FoodConsumption } from 'src/models/food-consumption.model';
 import { FoodRecord } from 'src/models/food-record.model';
 import { PaginatedResponse } from '../common/response/paginated.response';
 import { PaginationDto } from '../common/validators/pagination.dto';
-import { RegisterDailyFoodConsumptionDto } from '../patient/validators/register-daily-food-consumption.dto';
+import { CreateDailyFoodConsumptionDto } from '../patient/validators/create-daily-food-consumption.dto';
 import { UpdateDailyFoodConsumptionDto } from '../patient/validators/update-daily-food-consumption';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class FoodConsumptionService {
 
   async create(
     patientId: string,
-    { foodRecords, linkedDay }: RegisterDailyFoodConsumptionDto,
+    { foodRecords, linkedDay }: CreateDailyFoodConsumptionDto,
   ) {
     const transaction = await this.sequelize.transaction();
 
@@ -99,8 +99,6 @@ export class FoodConsumptionService {
         limit,
         include: FoodRecord,
       });
-
-    console.log(data, totalCount);
 
     return { data, totalCount };
   }

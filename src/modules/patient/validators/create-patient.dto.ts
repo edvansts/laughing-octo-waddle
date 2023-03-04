@@ -9,7 +9,7 @@ import {
 import { CIVIL_STATUS, GENDER, SEX } from 'src/constants/enum';
 import { BaseAuthDto } from '../../auth/validators/base-auth.dto';
 
-export class RegisterPatientDto extends BaseAuthDto {
+export class CreatePatientDto extends BaseAuthDto {
   @IsString()
   @Length(4, 50)
   name: string;

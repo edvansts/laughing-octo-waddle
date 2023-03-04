@@ -1,4 +1,5 @@
-import { IsString, IsEnum, IsOptional, IsArray } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsEnum, IsOptional, IsArray, IsDate } from 'class-validator';
 import {
   ALCOHOLIC_STATUS,
   CLINICAL_HISTORY,
@@ -9,7 +10,7 @@ import {
   SYMPTOM,
 } from 'src/constants/enum';
 
-export class RegisterClinicalEvaluationDto {
+export class CreateClinicalEvaluationDto {
   @IsString()
   medicationsAndSupplementsUsed: string;
 
@@ -68,4 +69,8 @@ export class RegisterClinicalEvaluationDto {
   @IsArray()
   @IsEnum(SYMPTOM, { each: true })
   reportedSymptoms: SYMPTOM[];
+
+  @Type(() => Date)
+  @IsDate()
+  examDate: Date;
 }

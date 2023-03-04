@@ -1,4 +1,5 @@
-import { IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDate, IsString } from 'class-validator';
 
 export class CreateBiochemicalEvaluationDto {
   @IsString()
@@ -96,4 +97,8 @@ export class CreateBiochemicalEvaluationDto {
 
   @IsString()
   ast: string;
+
+  @Type(() => Date)
+  @IsDate()
+  examDate: Date;
 }

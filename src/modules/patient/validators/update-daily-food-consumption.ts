@@ -2,7 +2,7 @@ import { OmitType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import { IsArray, IsDate, IsNotEmpty, IsString } from 'class-validator';
 import { Feeding } from 'src/types/food';
-import { RegisterDailyFoodConsumptionDto } from './register-daily-food-consumption.dto';
+import { CreateDailyFoodConsumptionDto } from './create-daily-food-consumption.dto';
 
 export class FeedingsDto implements Feeding {
   @IsString()
@@ -26,6 +26,6 @@ export class FoodRecordDto {
 }
 
 export class UpdateDailyFoodConsumptionDto extends OmitType(
-  RegisterDailyFoodConsumptionDto,
+  CreateDailyFoodConsumptionDto,
   ['linkedDay'],
 ) {}

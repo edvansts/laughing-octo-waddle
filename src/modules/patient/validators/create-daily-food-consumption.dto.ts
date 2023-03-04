@@ -23,7 +23,7 @@ export class FoodRecordDto {
   feedings: FeedingsDto[];
 }
 
-export class RegisterDailyFoodConsumptionDto {
+export class CreateDailyFoodConsumptionDto {
   @Type(() => Date)
   @IsDate()
   linkedDay: Date;

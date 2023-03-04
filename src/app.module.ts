@@ -46,8 +46,8 @@ import { FoodRecord } from './models/food-record.model';
       password: process.env.DB_PASSWORD,
       models: [
         Person,
-        Nutritionist,
         User,
+        Nutritionist,
         Patient,
         Diagnostic,
         Appointment,
