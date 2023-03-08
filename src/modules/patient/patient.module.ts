@@ -10,6 +10,7 @@ import { FoodConsumptionModule } from '../food-consumption/food-consumption.modu
 import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
 import { BiochemicalEvaluation } from 'src/models/biochemical-evaluation.model';
 import { AnthropometricEvaluation } from 'src/models/anthropometric-evaluation.model';
+import { GuidanceModule } from '../guidance/guidance.module';
 
 @Module({
   providers: [PatientService],
@@ -24,6 +25,7 @@ import { AnthropometricEvaluation } from 'src/models/anthropometric-evaluation.m
     AuthModule,
     UserModule,
     FoodConsumptionModule,
+    GuidanceModule,
   ],
   exports: [PatientService],
   controllers: [PatientController],

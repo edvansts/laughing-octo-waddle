@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { isDate } from 'class-validator';
 import { ClsService } from 'nestjs-cls';
 import { ROLE } from 'src/constants/user';
 import { Nutritionist } from 'src/models/nutritionist.model';
@@ -18,6 +17,9 @@ import { UserService } from '../user/user.service';
 import { CreateAppointmentDto } from './validators/create-appointment.dto';
 import { FindOptions } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
+import { CreateGuidanceDto } from './validators/create-guidance.dto';
+import { GuidanceService } from '../guidance/guidance.service';
+import { User } from 'src/models/user.model';
 
 @Injectable()
 export class NutritionistService {
@@ -29,6 +31,7 @@ export class NutritionistService {
     private userService: UserService,
     private readonly cls: ClsService<AppStore>,
     private readonly sequelize: Sequelize,
+    private readonly guidanceService: GuidanceService,
   ) {}
 
   async create({ crn, isAdmin = false, ...data }: RegisterNutritionistDto) {
@@ -78,16 +81,16 @@ export class NutritionistService {
     id: string,
     options: Omit<FindOptions<Nutritionist>, 'where'> = {},
   ) {
-    const patient = await this.nutritionistModel.findOne({
+    const nutritionist = await this.nutritionistModel.findOne({
       where: { id },
       ...options,
     });
 
-    if (!patient) {
+    if (!nutritionist) {
       throw new NotFoundException('Paciente não encontrado');
     }
 
-    return patient.toJSON();
+    return nutritionist.toJSON();
   }
 
   async getByByPersonId(personId: string) {
@@ -108,32 +111,61 @@ export class NutritionistService {
   ) {
     const { user } = this.cls.get();
 
-    const nutritionist = await this.getById(nutritionistId);
+    const nutritionist = await this.getById(nutritionistId, {
+      include: { model: Person, include: [User] },
+    });
 
-    if (nutritionist.id !== user.id) {
+    if (nutritionist.person.user.id !== user.id) {
       throw new BadRequestException('Nutricionista inválido');
     }
 
-    const appointmentDateNormalized = new Date(appointmentDate);
-
-    if (!isDate(appointmentDateNormalized)) {
-      throw new BadRequestException('Data da consulta inválida');
-    }
-
-    const patient = await this.patientService.getById(patientId);
+    const patient = await this.patientService.getById(patientId, {
+      include: Person,
+    });
 
     const patientUser = await this.userService.getByPersonId(patient.personId);
 
     const userIds = [user.id, patientUser.id];
 
     const appointment = await this.appointmentsService.create({
-      appointmentDate: appointmentDateNormalized,
+      appointmentDate,
       minutesBeforeToNotice: notificationTimes,
       patientId: patient.id,
       nutritionistId: nutritionist.id,
       userIds,
+      patientName: patient.person.name,
+      nutritionistName: nutritionist.person.name,
+      emails: [user.email, patientUser.email],
     });
 
     return appointment;
+  }
+
+  async createGuidance(
+    nutritionistId: string,
+    { nutritionalGuidance, patientId }: CreateGuidanceDto,
+  ) {
+    const { user } = this.cls.get();
+
+    const nutritionist = await this.getById(nutritionistId, {
+      include: { model: Person, include: [User] },
+    });
+
+    if (nutritionist.person.user.id !== user.id) {
+      throw new BadRequestException('Nutricionista inválido');
+    }
+
+    const patient = await this.patientService.getById(patientId, {
+      include: { model: Person, include: [User] },
+    });
+
+    const guidance = await this.guidanceService.create({
+      nutritionalGuidance,
+      patientId: patient.id,
+      nutritionistId,
+      patientUserId: patient.person.user.id,
+    });
+
+    return guidance;
   }
 }

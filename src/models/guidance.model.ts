@@ -20,6 +20,9 @@ export class Guidance extends Model<Guidance> {
   })
   id: string;
 
+  @Column({ type: DataType.STRING })
+  nutritionalGuidance: string;
+
   @ForeignKey(() => Patient)
   @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })
   patientId: string;

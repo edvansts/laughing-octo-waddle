@@ -42,6 +42,7 @@ import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-co
 import { UpdatePatientDto } from './validators/update-patient.dto';
 import { AnthropometricEvaluation } from 'src/models/anthropometric-evaluation.model';
 import { CreateAnthropometricEvaluationDto } from './validators/create-anthropometric-evaluation.dto';
+import { Guidance } from 'src/models/guidance.model';
 
 @ApiTags('patient')
 @UseGuards(RolesGuard)
@@ -227,5 +228,20 @@ export class PatientController {
       patientId,
       pagination,
     );
+  }
+
+  @Get(':patientId/guidance')
+  @ApiBearerAuth()
+  @UseInterceptors(TotalCountInterceptor)
+  @ApiQuery({ type: PaginationDto })
+  @ApiHeader(TOTAL_COUNT_HEADER_DESCRIPTION)
+  @ApiOkResponse({ type: [Guidance] })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
+  async getGuidances(
+    @Param('patientId') patientId: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.patientService.getGuidances(patientId, pagination);
   }
 }

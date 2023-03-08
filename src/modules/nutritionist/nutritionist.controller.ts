@@ -10,6 +10,8 @@ import { NutritionistService } from './nutritionist.service';
 import { CreateAppointmentDto } from './validators/create-appointment.dto';
 import { CreateNutritionistResponse } from './response/create-nutritionist.response';
 import { Appointment } from 'src/models/appointment.model';
+import { Guidance } from 'src/models/guidance.model';
+import { CreateGuidanceDto } from './validators/create-guidance.dto';
 
 @ApiBearerAuth()
 @ApiTags('nutritionist')
@@ -44,5 +46,19 @@ export class NutritionistController {
   @Roles(ROLE.ADMIN)
   async createNutritionist(@Body() nutritionist: RegisterNutritionistDto) {
     return this.nutritionistService.create(nutritionist);
+  }
+
+  @Post('/:nutritionistId/guidance')
+  @ApiBearerAuth()
+  @ApiCreatedResponse({ type: Guidance })
+  @Roles(ROLE.ADMIN, ROLE.NUTRITIONIST)
+  async createGuidance(
+    @Param('nutritionistId') nutritionistId: string,
+    @Body() guidanceData: CreateGuidanceDto,
+  ) {
+    return this.nutritionistService.createGuidance(
+      nutritionistId,
+      guidanceData,
+    );
   }
 }

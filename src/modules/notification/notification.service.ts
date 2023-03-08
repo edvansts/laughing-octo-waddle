@@ -21,7 +21,7 @@ export class NotificationService {
 
   async create(
     notifications: CreateNotificationParam[],
-    options: BulkCreateOptions<Notification>,
+    options?: BulkCreateOptions<Notification>,
   ) {
     await this.notificationModel.bulkCreate(
       notifications.map(

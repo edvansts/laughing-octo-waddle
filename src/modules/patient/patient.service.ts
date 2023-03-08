@@ -32,6 +32,7 @@ import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-co
 import { UpdatePatientDto } from './validators/update-patient.dto';
 import { AnthropometricEvaluation } from 'src/models/anthropometric-evaluation.model';
 import { CreateAnthropometricEvaluationDto } from './validators/create-anthropometric-evaluation.dto';
+import { GuidanceService } from '../guidance/guidance.service';
 
 @Injectable()
 export class PatientService {
@@ -48,6 +49,7 @@ export class PatientService {
     private foodConsumptionService: FoodConsumptionService,
     private authService: AuthService,
     private userService: UserService,
+    private guidanceService: GuidanceService,
     private readonly clsService: ClsService<AppStore>,
     private sequelize: Sequelize,
   ) {}
@@ -366,5 +368,17 @@ export class PatientService {
       });
 
     return { totalCount: count, data };
+  }
+
+  async getGuidances(patientId: string, pagination: PaginationDto) {
+    const { user } = this.clsService.get();
+
+    const patient = await this.getById(patientId);
+
+    if (user.role === ROLE.PATIENT && !this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    return this.guidanceService.getByPatientId(patient.id, pagination);
   }
 }
