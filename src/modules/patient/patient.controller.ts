@@ -50,6 +50,8 @@ import { RegisterHistoryWeightGainDto } from './validators/register-history-weig
 import { BodyEvolution } from 'src/models/body-evolution.model';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TotalCountInterceptor } from 'src/config/interceptors/total-count.interceptor';
+import { toMb } from 'src/utils/transform';
+import { IMAGE_EXTENSION_REGEX } from 'src/constants/regex';
 
 @ApiTags('patient')
 @UseGuards(RolesGuard)
@@ -247,9 +249,9 @@ export class PatientController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 5000 }),
+          new MaxFileSizeValidator({ maxSize: toMb(5) }),
           new FileTypeValidator({
-            fileType: /\.(gif|jpe?g|tiff?|png|webp|bmp)$/i,
+            fileType: IMAGE_EXTENSION_REGEX,
           }),
         ],
       }),

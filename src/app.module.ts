@@ -23,6 +23,7 @@ import { PushInfo } from './models/push-info.model';
 import { ClsModule } from 'nestjs-cls';
 import { FoodConsumption } from './models/food-consumption.model';
 import { FoodRecord } from './models/food-record.model';
+import { BodyEvolution } from './models/body-evolution.model';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { FoodRecord } from './models/food-record.model';
         PushInfo,
         FoodConsumption,
         FoodRecord,
+        BodyEvolution,
       ],
       uri: process.env.DB_URI,
       autoLoadModels: true,

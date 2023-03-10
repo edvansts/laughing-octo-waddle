@@ -19,6 +19,7 @@ import { PhysicalEvaluation } from './physical-evaluation.model';
 import { BR_PHONE_REGEX } from 'src/constants/regex';
 import { FoodConsumption } from './food-consumption.model';
 import { AnthropometricEvaluation } from './anthropometric-evaluation.model';
+import { BodyEvolution } from './body-evolution.model';
 
 @ApiExtraModels()
 @Table
@@ -102,4 +103,7 @@ export class Patient extends Model<Patient> {
 
   @HasMany(() => FoodConsumption)
   foodConsumptions: FoodConsumption[];
+
+  @HasMany(() => BodyEvolution)
+  bodyEvolutions: BodyEvolution[];
 }

@@ -19,7 +19,7 @@ export class BodyEvolutionService {
   async create(patientId: string, file: Express.Multer.File) {
     const image = await this.cloudinaryService
       .uploadImage(file, {
-        preset: UPLOAD_PRESETS.BODY_EVOLUTION,
+        upload_preset: UPLOAD_PRESETS.BODY_EVOLUTION,
       })
       .catch(() => {
         throw new BadRequestException(
@@ -42,9 +42,14 @@ export class BodyEvolutionService {
         throw new BadRequestException('Limite de uploads atingido hoje');
       }
 
+      const imageUrl =
+        image.eager && image.eager[0]
+          ? image.eager[0].secure_url
+          : image.secure_url;
+
       const bodyEvolution = await this.bodyEvolutionModel.create({
         publicId: image.public_id,
-        imageUrl: image.url,
+        imageUrl: imageUrl,
         uploadDate: new Date(),
         patientId,
       });
