@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { endOfDay, startOfDay } from 'date-fns';
+import { endOfDay, startOfDay, subHours } from 'date-fns';
 import { Op } from 'sequelize';
 import { BodyEvolution } from 'src/models/body-evolution.model';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UPLOAD_PRESETS } from '../cloudinary/constants';
+import { PaginatedResponse } from '../common/response/paginated.response';
+import { PaginationDto } from '../common/validators/pagination.dto';
 
 @Injectable()
 export class BodyEvolutionService {
@@ -53,5 +55,39 @@ export class BodyEvolutionService {
 
       throw err;
     }
+  }
+
+  async getByPatientId(
+    patientId: string,
+    { limit, offset }: PaginationDto,
+  ): Promise<PaginatedResponse<BodyEvolution[]>> {
+    const { count, rows } = await this.bodyEvolutionModel.findAndCountAll({
+      where: { patientId },
+      limit,
+      offset,
+    });
+
+    return {
+      data: rows,
+      totalCount: count,
+    };
+  }
+
+  async delete(patientId: string, bodyEvolutionId: string) {
+    const availabilityDateForDelete = subHours(new Date(), 1);
+
+    const deletedCount = await this.bodyEvolutionModel.destroy({
+      where: {
+        patientId,
+        id: bodyEvolutionId,
+        uploadDate: { [Op.gte]: availabilityDateForDelete },
+      },
+    });
+
+    if (!deletedCount) {
+      throw new BadRequestException('Upload não encontrado');
+    }
+
+    return true;
   }
 }

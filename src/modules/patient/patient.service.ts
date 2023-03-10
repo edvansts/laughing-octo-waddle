@@ -376,4 +376,26 @@ export class PatientService {
 
     return this.bodyEvolutionService.create(patientId, file);
   }
+
+  async getBodyEvolutions(patientId: string, pagination: PaginationDto) {
+    const { user } = this.clsService.get();
+
+    const patient = await this.getById(patientId);
+
+    if (user.role === ROLE.PATIENT && !this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    return this.guidanceService.getByPatientId(patient.id, pagination);
+  }
+
+  async deleteBodyEvolution(patientId: string, bodyEvolutionId: string) {
+    const patient = await this.getById(patientId);
+
+    if (!this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    await this.bodyEvolutionService.delete(patientId, bodyEvolutionId);
+  }
 }

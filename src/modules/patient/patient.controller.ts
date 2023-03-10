@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   FileTypeValidator,
   Get,
+  HttpCode,
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
@@ -72,6 +74,7 @@ export class PatientController {
   @Put(':patientId')
   @ApiBearerAuth()
   @ApiGoneResponse()
+  @HttpCode(204)
   async updatePatient(
     @Param('patientId') patientId: string,
     @Body() patient: UpdatePatientDto,
@@ -223,6 +226,7 @@ export class PatientController {
   @Post(':patientId/history-weight-gain')
   @ApiBearerAuth()
   @ApiGoneResponse()
+  @HttpCode(204)
   @UsePipes(new ValidationPipe({ transform: true }))
   @Roles(ROLE.ADMIN, ROLE.NUTRITIONIST)
   async registerHistoryWeightGain(
@@ -253,5 +257,36 @@ export class PatientController {
     file: Express.Multer.File,
   ) {
     return this.patientService.createBodyEvolution(patientId, file);
+  }
+
+  @Get(':patientId/body-evolution')
+  @ApiBearerAuth()
+  @UseInterceptors(TotalCountInterceptor)
+  @ApiQuery({ type: PaginationDto })
+  @ApiHeader(TOTAL_COUNT_HEADER_DESCRIPTION)
+  @ApiOkResponse({ type: [BodyEvolution] })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
+  async getBodyEvolutions(
+    @Param('patientId') patientId: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.patientService.getBodyEvolutions(patientId, pagination);
+  }
+
+  @Delete(':patientId/body-evolution/:bodyEvolutionId')
+  @ApiBearerAuth()
+  @UseInterceptors(TotalCountInterceptor)
+  @ApiQuery({ type: PaginationDto })
+  @ApiHeader(TOTAL_COUNT_HEADER_DESCRIPTION)
+  @ApiGoneResponse()
+  @HttpCode(204)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Roles(ROLE.PATIENT)
+  async deleteBodyEvolution(
+    @Param('patientId') patientId: string,
+    @Param('bodyEvolutionId') bodyEvolutionId: string,
+  ) {
+    return this.patientService.deleteBodyEvolution(patientId, bodyEvolutionId);
   }
 }
