@@ -26,13 +26,13 @@ import { UserService } from '../user/user.service';
 import { CreateBiochemicalEvaluationDto } from './validators/create-biochemical-evaluation.dto';
 import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation.dto';
 import { CreateClinicalEvaluationDto } from './validators/create-clinical-evaluation.dto';
-import { CreateDailyFoodConsumptionDto } from './validators/create-daily-food-consumption.dto';
 import { CreatePatientDto } from './validators/create-patient.dto';
-import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-consumption';
 import { UpdatePatientDto } from './validators/update-patient.dto';
 import { AnthropometricEvaluation } from 'src/models/anthropometric-evaluation.model';
 import { CreateAnthropometricEvaluationDto } from './validators/create-anthropometric-evaluation.dto';
 import { GuidanceService } from '../guidance/guidance.service';
+import { RegisterHistoryWeightGainDto } from './validators/register-history-weight-gain.dto';
+import { BodyEvolutionService } from '../body-evolution/body-evolution.service';
 
 @Injectable()
 export class PatientService {
@@ -52,6 +52,7 @@ export class PatientService {
     private guidanceService: GuidanceService,
     private readonly clsService: ClsService<AppStore>,
     private sequelize: Sequelize,
+    private bodyEvolutionService: BodyEvolutionService,
   ) {}
 
   async create({
@@ -171,7 +172,7 @@ export class PatientService {
       throw new UnauthorizedException('Acesso não autorizado');
     }
 
-    return patient.clinicalEvaluation;
+    return patient.clinicalEvaluations;
   }
 
   async createClinicalEvaluation(
@@ -186,37 +187,6 @@ export class PatientService {
     });
 
     return newClinicalEvaluation;
-  }
-
-  async createDailyFoodConsumption(
-    patientId: string,
-    data: CreateDailyFoodConsumptionDto,
-  ) {
-    const patient = await this.getById(patientId);
-
-    if (!this.isSamePatientAsUser(patient)) {
-      throw new UnauthorizedException('Acesso não autorizado');
-    }
-
-    return this.foodConsumptionService.create(patient.id, data);
-  }
-
-  async updateDailyFoodConsumption(
-    patientId: string,
-    foodConsumptionId: string,
-    data: UpdateDailyFoodConsumptionDto,
-  ) {
-    const patient = await this.getById(patientId);
-
-    if (!this.isSamePatientAsUser(patient)) {
-      throw new UnauthorizedException('Acesso não autorizado');
-    }
-
-    return this.foodConsumptionService.update(
-      patient.id,
-      foodConsumptionId,
-      data,
-    );
   }
 
   async getDailyFoodConsumptions(patientId: string, pagination: PaginationDto) {
@@ -267,7 +237,7 @@ export class PatientService {
     return { totalCount: count, data };
   }
 
-  async getPatientsWithoutFoodConsumptionToday() {
+  async getPatientsWithoutBodyEvolutionLastThirtyDays() {
     const todayRange: [Date, Date] = [
       startOfDay(new Date()),
       endOfDay(new Date()),
@@ -380,5 +350,30 @@ export class PatientService {
     }
 
     return this.guidanceService.getByPatientId(patient.id, pagination);
+  }
+
+  async registerHistoryWeightGain(
+    patientId: string,
+    { historyWeightGain }: RegisterHistoryWeightGainDto,
+  ) {
+    const patient = await this.getById(patientId);
+
+    await patient.update({ historyWeightGain }).catch(() => {
+      throw new BadRequestException(
+        'Erro ao atualizar histórico de ganho de peso',
+      );
+    });
+
+    return true;
+  }
+
+  async createBodyEvolution(patientId: string, file: Express.Multer.File) {
+    const patient = await this.getById(patientId);
+
+    if (!this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    return this.bodyEvolutionService.create(patientId, file);
   }
 }

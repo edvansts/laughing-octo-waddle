@@ -1,4 +1,3 @@
-import { ApiExtraModels } from '@nestjs/swagger';
 import {
   Column,
   Model,
@@ -10,7 +9,6 @@ import {
 } from 'sequelize-typescript';
 import { Patient } from './patient.model';
 
-@ApiExtraModels()
 @Table
 export class AnthropometricEvaluation extends Model<AnthropometricEvaluation> {
   @PrimaryKey
@@ -21,34 +19,34 @@ export class AnthropometricEvaluation extends Model<AnthropometricEvaluation> {
   })
   id: string;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.DECIMAL(8, 2) })
   weight: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.DECIMAL(8, 2) })
   dryWeight: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.DECIMAL(8, 2) })
   bmi: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.INTEGER() })
   height: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.INTEGER() })
   waistCircumference: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.INTEGER() })
   abdominalCircumference: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.INTEGER() })
   hipCircumference: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.INTEGER() })
   armCircumference: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.INTEGER() })
   rightWrist: number;
 
-  @Column({ type: DataType.NUMBER })
+  @Column({ type: DataType.INTEGER() })
   neckCircumference: number;
 
   @Column({ type: DataType.DATE, allowNull: false })

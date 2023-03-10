@@ -11,6 +11,7 @@ import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
 import { BiochemicalEvaluation } from 'src/models/biochemical-evaluation.model';
 import { AnthropometricEvaluation } from 'src/models/anthropometric-evaluation.model';
 import { GuidanceModule } from '../guidance/guidance.module';
+import { BodyEvolutionModule } from '../body-evolution/body-evolution.module';
 
 @Module({
   providers: [PatientService],
@@ -26,6 +27,7 @@ import { GuidanceModule } from '../guidance/guidance.module';
     UserModule,
     FoodConsumptionModule,
     GuidanceModule,
+    BodyEvolutionModule,
   ],
   exports: [PatientService],
   controllers: [PatientController],

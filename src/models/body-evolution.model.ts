@@ -11,7 +11,7 @@ import { Nutritionist } from './nutritionist.model';
 import { Patient } from './patient.model';
 
 @Table
-export class Appointment extends Model<Appointment> {
+export class BodyEvolution extends Model<BodyEvolution> {
   @PrimaryKey
   @Column({
     type: DataType.UUID,
@@ -21,7 +21,13 @@ export class Appointment extends Model<Appointment> {
   id: string;
 
   @Column({ type: DataType.DATE, allowNull: false })
-  appointmentDate: Date;
+  uploadDate: Date;
+
+  @Column({ type: DataType.STRING })
+  publicId: string;
+
+  @Column({ type: DataType.STRING })
+  imageUrl: string;
 
   @ForeignKey(() => Patient)
   @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4 })

@@ -7,8 +7,8 @@ import { FoodConsumption } from 'src/models/food-consumption.model';
 import { FoodRecord } from 'src/models/food-record.model';
 import { PaginatedResponse } from '../common/response/paginated.response';
 import { PaginationDto } from '../common/validators/pagination.dto';
-import { CreateDailyFoodConsumptionDto } from '../patient/validators/create-daily-food-consumption.dto';
-import { UpdateDailyFoodConsumptionDto } from '../patient/validators/update-daily-food-consumption';
+import { CreateDailyFoodConsumptionDto } from '../nutritionist/validators/create-daily-food-consumption.dto';
+import { UpdateDailyFoodConsumptionDto } from '../nutritionist/validators/update-daily-food-consumption';
 
 @Injectable()
 export class FoodConsumptionService {
@@ -22,6 +22,7 @@ export class FoodConsumptionService {
 
   async create(
     patientId: string,
+    nutritionistId: string,
     { foodRecords, linkedDay }: CreateDailyFoodConsumptionDto,
   ) {
     const transaction = await this.sequelize.transaction();
@@ -30,7 +31,11 @@ export class FoodConsumptionService {
       const range: [Date, Date] = [startOfDay(linkedDay), endOfDay(linkedDay)];
 
       const [foodConsumption] = await this.foodConsumptionModel.findOrCreate({
-        where: { linkedDay: { [Op.between]: range }, patientId },
+        where: {
+          linkedDay: { [Op.between]: range },
+          patientId,
+          nutritionistId,
+        },
         defaults: { linkedDay, patientId },
         transaction,
       });

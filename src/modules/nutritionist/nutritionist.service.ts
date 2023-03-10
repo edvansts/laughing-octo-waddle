@@ -20,6 +20,9 @@ import { Sequelize } from 'sequelize-typescript';
 import { CreateGuidanceDto } from './validators/create-guidance.dto';
 import { GuidanceService } from '../guidance/guidance.service';
 import { User } from 'src/models/user.model';
+import { CreateDailyFoodConsumptionDto } from './validators/create-daily-food-consumption.dto';
+import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-consumption';
+import { FoodConsumptionService } from '../food-consumption/food-consumption.service';
 
 @Injectable()
 export class NutritionistService {
@@ -29,16 +32,17 @@ export class NutritionistService {
     private appointmentsService: AppointmentsService,
     private authService: AuthService,
     private userService: UserService,
-    private readonly cls: ClsService<AppStore>,
+    private readonly clsService: ClsService<AppStore>,
     private readonly sequelize: Sequelize,
     private readonly guidanceService: GuidanceService,
+    private readonly foodConsumptionService: FoodConsumptionService,
   ) {}
 
   async create({ crn, isAdmin = false, ...data }: RegisterNutritionistDto) {
     const transaction = await this.sequelize.transaction();
 
     try {
-      const { user } = this.cls.get();
+      const { user } = this.clsService.get();
       const nutritionistRole =
         isAdmin && user.role === ROLE.ADMIN ? ROLE.ADMIN : ROLE.NUTRITIONIST;
 
@@ -87,7 +91,23 @@ export class NutritionistService {
     });
 
     if (!nutritionist) {
-      throw new NotFoundException('Paciente não encontrado');
+      throw new NotFoundException('Nutricionista não encontrado');
+    }
+
+    return nutritionist.toJSON();
+  }
+
+  async getByPersonId(
+    personId: string,
+    options: Omit<FindOptions<Nutritionist>, 'where'> = {},
+  ) {
+    const nutritionist = await this.nutritionistModel.findOne({
+      where: { personId },
+      ...options,
+    });
+
+    if (!nutritionist) {
+      throw new NotFoundException('Nutricionista não encontrado');
     }
 
     return nutritionist.toJSON();
@@ -109,7 +129,7 @@ export class NutritionistService {
     nutritionistId: string,
     { appointmentDate, notificationTimes, patientId }: CreateAppointmentDto,
   ) {
-    const { user } = this.cls.get();
+    const { user } = this.clsService.get();
 
     const nutritionist = await this.getById(nutritionistId, {
       include: { model: Person, include: [User] },
@@ -145,7 +165,7 @@ export class NutritionistService {
     nutritionistId: string,
     { nutritionalGuidance, patientId }: CreateGuidanceDto,
   ) {
-    const { user } = this.cls.get();
+    const { user } = this.clsService.get();
 
     const nutritionist = await this.getById(nutritionistId, {
       include: { model: Person, include: [User] },
@@ -167,5 +187,36 @@ export class NutritionistService {
     });
 
     return guidance;
+  }
+
+  async createDailyFoodConsumption(
+    patientId: string,
+    data: CreateDailyFoodConsumptionDto,
+  ) {
+    const { user } = this.clsService.get();
+
+    const patient = await this.getById(patientId);
+
+    const nutritionist = await this.getByByPersonId(user.personId);
+
+    return this.foodConsumptionService.create(
+      patient.id,
+      nutritionist.id,
+      data,
+    );
+  }
+
+  async updateDailyFoodConsumption(
+    patientId: string,
+    foodConsumptionId: string,
+    data: UpdateDailyFoodConsumptionDto,
+  ) {
+    const patient = await this.getById(patientId);
+
+    return this.foodConsumptionService.update(
+      patient.id,
+      foodConsumptionId,
+      data,
+    );
   }
 }

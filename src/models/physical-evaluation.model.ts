@@ -58,9 +58,6 @@ export class PhysicalEvaluation extends Model<PhysicalEvaluation> {
   @Column({ type: DataType.STRING })
   otherInformations?: string;
 
-  @Column({ type: DataType.STRING })
-  historyWeightGain: string;
-
   @Column({ type: DataType.DATE, allowNull: false })
   examDate: Date;
 

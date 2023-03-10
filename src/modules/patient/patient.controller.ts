@@ -1,11 +1,15 @@
 import {
   Body,
   Controller,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Post,
   Put,
   Query,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
   UsePipes,
@@ -24,7 +28,6 @@ import { Roles } from 'src/config/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/config/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/config/guards/roles.guard';
 import { ROLE } from 'src/constants/user';
-import { TotalCountInterceptor } from 'src/interceptors/total-count/total-count.interceptor';
 import { BiochemicalEvaluation } from 'src/models/biochemical-evaluation.model';
 import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
 import { FoodConsumption } from 'src/models/food-consumption.model';
@@ -36,13 +39,15 @@ import { CreatePatientResponse } from './response/create-patient.response';
 import { CreateBiochemicalEvaluationDto } from './validators/create-biochemical-evaluation.dto';
 import { CreatePhysicalEvaluationDto } from './validators/create-physical-evaluation.dto';
 import { CreateClinicalEvaluationDto } from './validators/create-clinical-evaluation.dto';
-import { CreateDailyFoodConsumptionDto } from './validators/create-daily-food-consumption.dto';
 import { CreatePatientDto } from './validators/create-patient.dto';
-import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-consumption';
 import { UpdatePatientDto } from './validators/update-patient.dto';
 import { AnthropometricEvaluation } from 'src/models/anthropometric-evaluation.model';
 import { CreateAnthropometricEvaluationDto } from './validators/create-anthropometric-evaluation.dto';
 import { Guidance } from 'src/models/guidance.model';
+import { RegisterHistoryWeightGainDto } from './validators/register-history-weight-gain.dto';
+import { BodyEvolution } from 'src/models/body-evolution.model';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { TotalCountInterceptor } from 'src/config/interceptors/total-count.interceptor';
 
 @ApiTags('patient')
 @UseGuards(RolesGuard)
@@ -95,36 +100,6 @@ export class PatientController {
     );
   }
 
-  @Post(':patientId/food-consumption')
-  @ApiBearerAuth()
-  @ApiCreatedResponse({ type: FoodConsumption })
-  @Roles(ROLE.PATIENT)
-  async createFoodConsumption(
-    @Param('patientId') patientId: string,
-    @Body() foodConsumption: CreateDailyFoodConsumptionDto,
-  ) {
-    return this.patientService.createDailyFoodConsumption(
-      patientId,
-      foodConsumption,
-    );
-  }
-
-  @Put(':patientId/food-consumption/:foodConsumptionId')
-  @ApiBearerAuth()
-  @ApiOkResponse({ type: FoodConsumption })
-  @Roles(ROLE.PATIENT)
-  async updateFoodConsumption(
-    @Param('patientId') patientId: string,
-    @Param('foodConsumptionId') foodConsumptionId: string,
-    @Body() foodConsumption: UpdateDailyFoodConsumptionDto,
-  ) {
-    return this.patientService.updateDailyFoodConsumption(
-      patientId,
-      foodConsumptionId,
-      foodConsumption,
-    );
-  }
-
   @Get(':patientId/food-consumption')
   @ApiBearerAuth()
   @ApiOkResponse({ type: [FoodConsumption] })
@@ -132,7 +107,7 @@ export class PatientController {
   @ApiQuery({ type: PaginationDto })
   @ApiHeader(TOTAL_COUNT_HEADER_DESCRIPTION)
   @UsePipes(new ValidationPipe({ transform: true }))
-  @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
+  @Roles(ROLE.NUTRITIONIST, ROLE.ADMIN)
   async getFoodConsumptions(
     @Param('patientId') patientId: string,
     @Query() pagination: PaginationDto,
@@ -243,5 +218,40 @@ export class PatientController {
     @Query() pagination: PaginationDto,
   ) {
     return this.patientService.getGuidances(patientId, pagination);
+  }
+
+  @Post(':patientId/history-weight-gain')
+  @ApiBearerAuth()
+  @ApiGoneResponse()
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Roles(ROLE.ADMIN, ROLE.NUTRITIONIST)
+  async registerHistoryWeightGain(
+    @Param('patientId') patientId: string,
+    @Body() data: RegisterHistoryWeightGainDto,
+  ) {
+    return this.patientService.registerHistoryWeightGain(patientId, data);
+  }
+
+  @Post(':patientId/body-evolution')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: BodyEvolution })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Roles(ROLE.PATIENT)
+  async createBodyEvolution(
+    @Param('patientId') patientId: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5000 }),
+          new FileTypeValidator({
+            fileType: /\.(gif|jpe?g|tiff?|png|webp|bmp)$/i,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    return this.patientService.createBodyEvolution(patientId, file);
   }
 }

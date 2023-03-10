@@ -25,12 +25,14 @@ export class TasksService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_6PM)
-  async rememberDailyFoodConsumption() {
+  async rememberSendBodyEvolution() {
     try {
-      this.logger.log('Verificating patients without daily food consumptions');
+      this.logger.log(
+        'Verificating patients without send body evolution in last 30 days',
+      );
 
       const patients =
-        await this.patientService.getPatientsWithoutFoodConsumptionToday();
+        await this.patientService.getPatientsWithoutBodyEvolutionLastThirtyDays();
 
       if (isEmpty(patients)) {
         return;

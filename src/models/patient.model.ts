@@ -18,6 +18,7 @@ import { Person } from './person.model';
 import { PhysicalEvaluation } from './physical-evaluation.model';
 import { BR_PHONE_REGEX } from 'src/constants/regex';
 import { FoodConsumption } from './food-consumption.model';
+import { AnthropometricEvaluation } from './anthropometric-evaluation.model';
 
 @ApiExtraModels()
 @Table
@@ -68,6 +69,9 @@ export class Patient extends Model<Patient> {
   @Column({ type: DataType.STRING })
   completeAddress: string;
 
+  @Column({ type: DataType.STRING })
+  historyWeightGain: string;
+
   @Column({
     type: DataType.STRING,
     validate: { is: BR_PHONE_REGEX },
@@ -88,10 +92,13 @@ export class Patient extends Model<Patient> {
   appointments: Appointment[];
 
   @HasMany(() => PhysicalEvaluation)
-  physicalEvaluation: PhysicalEvaluation[];
+  physicalEvaluations: PhysicalEvaluation[];
+
+  @HasMany(() => AnthropometricEvaluation)
+  anthropometricEvaluations: AnthropometricEvaluation[];
 
   @HasOne(() => ClinicalEvaluation)
-  clinicalEvaluation: ClinicalEvaluation;
+  clinicalEvaluations: ClinicalEvaluation;
 
   @HasMany(() => FoodConsumption)
   foodConsumptions: FoodConsumption[];

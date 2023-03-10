@@ -53,10 +53,6 @@ export class CreatePhysicalEvaluationDto {
   @IsString()
   otherInformations?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  historyWeightGain: string;
-
   @Type(() => Date)
   @IsDate()
   examDate: Date;

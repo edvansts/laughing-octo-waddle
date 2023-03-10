@@ -11,6 +11,7 @@ import {
 } from 'sequelize-typescript';
 import { Appointment } from './appointment.model';
 import { Diagnostic } from './diagnostic.model';
+import { FoodConsumption } from './food-consumption.model';
 import { Person } from './person.model';
 
 @ApiExtraModels()
@@ -39,4 +40,7 @@ export class Nutritionist extends Model<Nutritionist> {
 
   @HasMany(() => Appointment)
   appointments: Appointment[];
+
+  @HasMany(() => FoodConsumption)
+  foodConsumptions: FoodConsumption[];
 }
