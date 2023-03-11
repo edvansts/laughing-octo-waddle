@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ClsService } from 'nestjs-cls';
@@ -23,6 +24,7 @@ import { User } from 'src/models/user.model';
 import { CreateDailyFoodConsumptionDto } from './validators/create-daily-food-consumption.dto';
 import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-consumption';
 import { FoodConsumptionService } from '../food-consumption/food-consumption.service';
+import { NutritionalDataService } from '../nutritional-data/nutritional-data.service';
 
 @Injectable()
 export class NutritionistService {
@@ -36,6 +38,7 @@ export class NutritionistService {
     private readonly sequelize: Sequelize,
     private readonly guidanceService: GuidanceService,
     private readonly foodConsumptionService: FoodConsumptionService,
+    private readonly nutritionalDataService: NutritionalDataService,
   ) {}
 
   async create({ crn, isAdmin = false, ...data }: RegisterNutritionistDto) {
@@ -113,18 +116,6 @@ export class NutritionistService {
     return nutritionist.toJSON();
   }
 
-  async getByByPersonId(personId: string) {
-    const nutritionist = await this.nutritionistModel.findOne({
-      where: { personId },
-    });
-
-    if (!nutritionist) {
-      throw new NotFoundException('Paciente não encontrado');
-    }
-
-    return nutritionist.toJSON();
-  }
-
   async createAppointment(
     nutritionistId: string,
     { appointmentDate, notificationTimes, patientId }: CreateAppointmentDto,
@@ -197,7 +188,7 @@ export class NutritionistService {
 
     const patient = await this.getById(patientId);
 
-    const nutritionist = await this.getByByPersonId(user.personId);
+    const nutritionist = await this.getByPersonId(user.personId);
 
     return this.foodConsumptionService.create(
       patient.id,
@@ -218,5 +209,40 @@ export class NutritionistService {
       foodConsumptionId,
       data,
     );
+  }
+
+  private isSameNutritionistAsUser(nutritionist: Nutritionist) {
+    const { user } = this.clsService.get();
+
+    if (user.role === ROLE.PATIENT && nutritionist.personId !== user.personId) {
+      return false;
+    }
+
+    return true;
+  }
+
+  async createNutritionalData({
+    patientId,
+    nutritionistId,
+    ...data
+  }: {
+    patientId: string;
+    nutritionistId: string;
+    description: string;
+    file: Express.Multer.File;
+  }) {
+    const patient = await this.getById(patientId);
+
+    const nutritionist = await this.getById(nutritionistId);
+
+    if (!this.isSameNutritionistAsUser(nutritionist)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    return this.nutritionalDataService.create({
+      ...data,
+      nutritionistId: nutritionist.id,
+      patientId: patient.id,
+    });
   }
 }

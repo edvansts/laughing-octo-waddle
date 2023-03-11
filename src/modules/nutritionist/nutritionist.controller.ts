@@ -1,11 +1,18 @@
 import {
   Body,
   Controller,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   Post,
   Put,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -28,6 +35,11 @@ import { CreateGuidanceDto } from './validators/create-guidance.dto';
 import { FoodConsumption } from 'src/models/food-consumption.model';
 import { CreateDailyFoodConsumptionDto } from './validators/create-daily-food-consumption.dto';
 import { UpdateDailyFoodConsumptionDto } from './validators/update-daily-food-consumption';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { NutritionalData } from 'src/models/nutritional-data.model';
+import { toMb } from 'src/utils/transform';
+import { PDF_EXTENSION_REGEX } from 'src/constants/regex';
+import { CreateNutritionalDataDto } from './validators/create-nutritional-data.dto';
 
 @ApiBearerAuth()
 @ApiTags('nutritionist')
@@ -39,7 +51,7 @@ export class NutritionistController {
 
   @Get('/person/:personId')
   async getNutritionistByPersonId(@Param('personId') personId: string) {
-    return this.nutritionistService.getByByPersonId(personId);
+    return this.nutritionistService.getByPersonId(personId);
   }
 
   @Roles(ROLE.NUTRITIONIST, ROLE.ADMIN)
@@ -106,5 +118,35 @@ export class NutritionistController {
       foodConsumptionId,
       foodConsumption,
     );
+  }
+
+  @Post(':nutritionistId/patient/:patientId/nutritional-data')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: NutritionalData })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Roles(ROLE.ADMIN, ROLE.NUTRITIONIST)
+  async createNutritionalData(
+    @Param('nutritionistId') nutritionistId: string,
+    @Param('patientId') patientId: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: toMb(10) }),
+          new FileTypeValidator({
+            fileType: PDF_EXTENSION_REGEX,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Body() data: CreateNutritionalDataDto,
+  ) {
+    return this.nutritionistService.createNutritionalData({
+      file,
+      nutritionistId,
+      patientId,
+      ...data,
+    });
   }
 }

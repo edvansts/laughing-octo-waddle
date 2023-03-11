@@ -9,6 +9,7 @@ import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
 import { GuidanceModule } from '../guidance/guidance.module';
 import { FoodConsumptionModule } from '../food-consumption/food-consumption.module';
+import { NutritionalDataModule } from '../nutritional-data/nutritional-data.module';
 
 @Module({
   providers: [NutritionistService],
@@ -20,6 +21,7 @@ import { FoodConsumptionModule } from '../food-consumption/food-consumption.modu
     AppointmentsModule,
     GuidanceModule,
     FoodConsumptionModule,
+    NutritionalDataModule,
   ],
   exports: [NutritionistService],
   controllers: [NutritionistController],
