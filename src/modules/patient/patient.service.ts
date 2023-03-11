@@ -33,6 +33,7 @@ import { GuidanceService } from '../guidance/guidance.service';
 import { RegisterHistoryWeightGainDto } from './validators/register-history-weight-gain.dto';
 import { BodyEvolutionService } from '../body-evolution/body-evolution.service';
 import { BodyEvolution } from 'src/models/body-evolution.model';
+import { NutritionalDataService } from '../nutritional-data/nutritional-data.service';
 
 @Injectable()
 export class PatientService {
@@ -45,14 +46,15 @@ export class PatientService {
     @InjectModel(BiochemicalEvaluation)
     private biochemicalEvaluationModel: typeof BiochemicalEvaluation,
     @InjectModel(AnthropometricEvaluation)
-    private anthropometricEvaluationModel: typeof AnthropometricEvaluation,
-    private foodConsumptionService: FoodConsumptionService,
-    private authService: AuthService,
-    private userService: UserService,
-    private guidanceService: GuidanceService,
+    private readonly anthropometricEvaluationModel: typeof AnthropometricEvaluation,
     private readonly clsService: ClsService<AppStore>,
-    private sequelize: Sequelize,
-    private bodyEvolutionService: BodyEvolutionService,
+    private readonly sequelize: Sequelize,
+    private readonly foodConsumptionService: FoodConsumptionService,
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+    private readonly guidanceService: GuidanceService,
+    private readonly bodyEvolutionService: BodyEvolutionService,
+    private readonly nutritionalDataService: NutritionalDataService,
   ) {}
 
   async create({
@@ -397,5 +399,17 @@ export class PatientService {
     }
 
     await this.bodyEvolutionService.delete(patientId, bodyEvolutionId);
+  }
+
+  async getNutritionalData(patientId: string, pagination: PaginationDto) {
+    const { user } = this.clsService.get();
+
+    const patient = await this.getById(patientId);
+
+    if (user.role === ROLE.PATIENT && !this.isSamePatientAsUser(patient)) {
+      throw new UnauthorizedException('Acesso não autorizado');
+    }
+
+    return this.nutritionalDataService.getByPatient(patientId, pagination);
   }
 }

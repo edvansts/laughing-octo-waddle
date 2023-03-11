@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { NutritionalData } from 'src/models/nutritional-data.model';
 import { CloudStorageService } from '../cloud-storage/cloud-storage.service';
+import { PaginatedResponse } from '../common/response/paginated.response';
+import { PaginationDto } from '../common/validators/pagination.dto';
 import { NUTRITIONAL_DATA_PATH } from './constants';
 import { CreateNutritionalDataParams } from './types';
 
@@ -45,5 +47,21 @@ export class NutritionalDataService {
     });
 
     return nutritionalData;
+  }
+
+  async getByPatient(
+    patientId: string,
+    { limit, offset }: PaginationDto,
+  ): Promise<PaginatedResponse<NutritionalData[]>> {
+    const { count, rows } = await this.nutritionalDataModel.findAndCountAll({
+      where: { patientId },
+      limit,
+      offset,
+    });
+
+    return {
+      data: rows,
+      totalCount: count,
+    };
   }
 }

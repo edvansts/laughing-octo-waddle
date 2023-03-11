@@ -24,6 +24,7 @@ import { ClsModule } from 'nestjs-cls';
 import { FoodConsumption } from './models/food-consumption.model';
 import { FoodRecord } from './models/food-record.model';
 import { BodyEvolution } from './models/body-evolution.model';
+import { NutritionalData } from './models/nutritional-data.model';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { BodyEvolution } from './models/body-evolution.model';
         FoodConsumption,
         FoodRecord,
         BodyEvolution,
+        NutritionalData,
       ],
       uri: process.env.DB_URI,
       autoLoadModels: true,

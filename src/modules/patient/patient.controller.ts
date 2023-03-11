@@ -291,4 +291,19 @@ export class PatientController {
   ) {
     return this.patientService.deleteBodyEvolution(patientId, bodyEvolutionId);
   }
+
+  @Get(':patientId/nutritional-data')
+  @ApiBearerAuth()
+  @UseInterceptors(TotalCountInterceptor)
+  @ApiQuery({ type: PaginationDto })
+  @ApiHeader(TOTAL_COUNT_HEADER_DESCRIPTION)
+  @ApiOkResponse({ type: [Guidance] })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Roles(ROLE.PATIENT, ROLE.NUTRITIONIST, ROLE.ADMIN)
+  async getNutritionalData(
+    @Param('patientId') patientId: string,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.patientService.getNutritionalData(patientId, pagination);
+  }
 }
