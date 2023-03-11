@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { endOfDay, startOfDay } from 'date-fns';
+import { endOfDay, startOfDay, subDays } from 'date-fns';
 import { ClsService } from 'nestjs-cls';
 import { Op } from 'sequelize';
 import { FindOptions } from 'sequelize';
@@ -13,7 +13,6 @@ import { Sequelize } from 'sequelize-typescript';
 import { ROLE } from 'src/constants/user';
 import { BiochemicalEvaluation } from 'src/models/biochemical-evaluation.model';
 import { ClinicalEvaluation } from 'src/models/clinical-evaluation.model';
-import { FoodConsumption } from 'src/models/food-consumption.model';
 import { Patient } from 'src/models/patient.model';
 import { Person } from 'src/models/person.model';
 import { PhysicalEvaluation } from 'src/models/physical-evaluation.model';
@@ -33,6 +32,7 @@ import { CreateAnthropometricEvaluationDto } from './validators/create-anthropom
 import { GuidanceService } from '../guidance/guidance.service';
 import { RegisterHistoryWeightGainDto } from './validators/register-history-weight-gain.dto';
 import { BodyEvolutionService } from '../body-evolution/body-evolution.service';
+import { BodyEvolution } from 'src/models/body-evolution.model';
 
 @Injectable()
 export class PatientService {
@@ -238,8 +238,8 @@ export class PatientService {
   }
 
   async getPatientsWithoutBodyEvolutionLastThirtyDays() {
-    const todayRange: [Date, Date] = [
-      startOfDay(new Date()),
+    const thirtyDaysRange: [Date, Date] = [
+      subDays(startOfDay(new Date()), 30),
       endOfDay(new Date()),
     ];
 
@@ -248,18 +248,18 @@ export class PatientService {
         [Op.or]: [
           {
             [Op.not]: {
-              '$foodConsumptions.linkedDay$': {
-                [Op.between]: todayRange,
+              '$bodyEvolution.uploadDate$': {
+                [Op.between]: thirtyDaysRange,
               },
             },
           },
           {
-            '$foodConsumptions.id$': null,
+            '$bodyEvolution.id$': null,
           },
         ],
       },
       include: {
-        model: FoodConsumption,
+        model: BodyEvolution,
         required: false,
       },
     });

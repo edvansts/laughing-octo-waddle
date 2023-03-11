@@ -12,5 +12,9 @@ declare namespace NodeJS {
     readonly CLOUDINARY_CLOUD_NAME: string;
     readonly CLOUDINARY_API_KEY: string;
     readonly CLOUDINARY_API_SECRET: string;
+    readonly GOOGLE_API_CLIENT_ID: string;
+    readonly GOOGLE_API_CLIENT_SECRET: string;
+    readonly GOOGLE_API_REDIRECT_URI: string;
+    readonly GOOGLE_API_REFRESH_TOKEN: string;
   }
 }

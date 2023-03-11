@@ -389,6 +389,13 @@
   dependencies:
     googleapis-common "^6.0.3"
 
+"@googleapis/drive@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@googleapis/drive/-/drive-5.0.0.tgz#e5b97619924193c3c35faa5a75d6734c6cf0634e"
+  integrity sha512-lkT7eUZjXMg/aS9c8eoJ31Xgr9Ra4MgC8s1CSlyS3HVCbxOqOwT1Xkjf3+gYUADxuHbvpBFIOKnaRh9a8VHnMg==
+  dependencies:
+    googleapis-common "^6.0.3"
+
 "@humanwhocodes/config-array@^0.11.8":
   version "0.11.8"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.8.tgz#03595ac2075a4dc0f191cc2131de14fbd7d410b9"

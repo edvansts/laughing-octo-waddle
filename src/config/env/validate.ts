@@ -45,6 +45,15 @@ export class EnvironmentVariables {
   CLOUDINARY_API_KEY: string;
   @IsString()
   CLOUDINARY_API_SECRET: string;
+
+  @IsString()
+  GOOGLE_API_CLIENT_ID: string;
+  @IsString()
+  GOOGLE_API_CLIENT_SECRET: string;
+  @IsString()
+  GOOGLE_API_REDIRECT_URI: string;
+  @IsString()
+  GOOGLE_API_REFRESH_TOKEN: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {
